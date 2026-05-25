@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { getExamById } from './api/examService';
+import notificationService from './services/NotificationService';
+import loggerService from './services/LoggerService';
 
 function StudentPortal() {
   const [examId, setExamId] = useState('');
@@ -23,7 +25,7 @@ function StudentPortal() {
 
     const result = await getExamById(examId);
 
-    if (!result) {
+    if (!result || result.status !== 'published') {
       setError(`No exam found with ID "${examId}".`);
     } else {
       setExam(result);
@@ -36,8 +38,24 @@ function StudentPortal() {
     setAnswers((prev) => ({ ...prev, [questionId]: option }));
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const latest = await getExamById(exam.id);
+      if (!latest || latest.status !== 'published') {
+        setError('This exam is closed and can no longer be submitted.');
+        notificationService.error(`Submission failed: Exam "${exam.title}" is closed.`);
+        loggerService.error(`Failed submission attempt for closed exam ID ${exam.id}`);
+        return;
+      }
+      setSubmitted(true);
+      notificationService.success(`Exam "${exam.title}" submitted successfully.`);
+      loggerService.success(`Student submitted exam ID ${exam.id}`);
+    } catch (err) {
+      setError('An error occurred during submission.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -262,6 +280,12 @@ function StudentPortal() {
 
                   {!submitted ? (
                     <div className="d-grid gap-2 mt-5">
+                      {error && (
+                        <div className="alert alert-danger rounded-4 py-2 mb-3 animate-in" role="alert">
+                          <span className="me-2">⚠️</span>
+                          {error}
+                        </div>
+                      )}
                       <button 
                         className="btn btn-primary btn-lg rounded-pill py-3 fw-bold shadow" 
                         onClick={handleSubmit}

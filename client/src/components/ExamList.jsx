@@ -1,6 +1,6 @@
 import ExamCard from './ExamCard';
 
-function ExamList({ exams, onViewScores, onEdit, onDelete }) {
+function ExamList({ exams, onViewScores, onEdit, onDelete, onStatusChange }) {
   if (exams.length === 0) {
     return (
       <div className="text-center p-5 border rounded-4 bg-light">
@@ -19,6 +19,7 @@ function ExamList({ exams, onViewScores, onEdit, onDelete }) {
             onViewScores={onViewScores}
             onEdit={onEdit}
             onDelete={onDelete}
+            onStatusChange={onStatusChange}
           />
         </div>
       ))}

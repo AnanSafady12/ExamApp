@@ -162,6 +162,31 @@ TEACHER EXAM CRUD MANAGEMENT FLOW
    - The data is kept in-memory in the `exams` array exported by `api/mockDb.js`.
 
 
+EXAM STATUS MANAGEMENT
+======================
+1. Status Rules:
+   - draft: Newly created or inactive exams. Visible ONLY to teachers on their dashboard. Hidden entirely from students.
+   - published: Active exams. Visible to both teachers and students. Students can search for and take published exams.
+   - closed: Ended exams. Visible on the teacher dashboard. Cannot be started or submitted by students.
+
+2. Teacher Flow:
+   - Teachers can toggle/change the status of any exam card using an interactive dropdown selection (combobox) in the card's header.
+   - Changing status calls updateExam(examId, { status: newStatus }) via examService.
+   - It notifies the teacher of a successful state transition via NotificationService and logs the change via LoggerService.
+
+3. Student Restriction Flow:
+   - When a student searches for an exam ID in StudentPortal:
+     - The portal fetches the exam via getExamById(id).
+     - If the exam is not found or has status other than 'published' (i.e. 'draft' or 'closed'), access is denied and an error message is shown.
+   - When submitting the answers:
+     - The portal does a final fetch of the exam status.
+     - If the exam was closed or drafted by the teacher while the student was taking it, submission is blocked and an error alert is displayed.
+     - Successfully submitted active exams trigger a NotificationService success message and are logged in LoggerService.
+
+4. Data Changes in Mock DB:
+   - The status is stored in each exam object in the `exams` array (inside `api/mockDb.js`) as a string property named `status` with one of three values: 'draft', 'published', or 'closed'.
+
+
 GENERIC SUPPORTING SERVICES
 ===========================
 These OOP service classes are fully generic, reusable modules built to support any client-side JavaScript or React application, independent of ExamApp business logic.

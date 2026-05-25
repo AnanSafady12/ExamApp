@@ -1,12 +1,25 @@
-function ExamCard({ exam, onViewScores, onEdit, onDelete }) {
+function ExamCard({ exam, onViewScores, onEdit, onDelete, onStatusChange }) {
   return (
     <div className="card h-100 shadow-sm border-0" style={{ borderRadius: '16px' }}>
       <div className="card-body d-flex flex-column p-4">
         <div className="d-flex justify-content-between align-items-start mb-3">
           <h5 className="card-title fw-bold text-dark mb-0">{exam.title}</h5>
-          <span className={`badge ${exam.status === 'published' ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'} rounded-pill px-3 py-2 small`}>
-            {exam.status}
-          </span>
+          <select
+            className={`form-select form-select-sm fw-semibold w-auto px-2 py-1 ${
+              exam.status === 'published'
+                ? 'text-success bg-success-subtle border-success-subtle'
+                : exam.status === 'closed'
+                ? 'text-danger bg-danger-subtle border-danger-subtle'
+                : 'text-secondary bg-secondary-subtle border-secondary-subtle'
+            }`}
+            value={exam.status}
+            onChange={(e) => onStatusChange(exam.id, e.target.value)}
+            style={{ borderRadius: '8px', fontSize: '12px' }}
+          >
+            <option value="draft">draft</option>
+            <option value="published">published</option>
+            <option value="closed">closed</option>
+          </select>
         </div>
         <p className="card-text text-muted mb-4 small">
           📋 {exam.questions.length} question{exam.questions.length !== 1 && 's'}
