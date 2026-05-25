@@ -51,8 +51,12 @@ The application utilizes React Router (HashRouter) to manage client-side routing
 
 5. Student Portal (/student) [PROTECTED]
    - Access limited to authenticated users with the STUDENT role.
-   - Allows search and loading of exams by ID.
-   - Multiple-choice question interface and submission card.
+   - Automatically fetches all available exams on load using examService.getAllExams().
+   - Filters out non-published exams (drafts and closed exams are completely hidden).
+   - Renders modular sub-components:
+     * StudentExamList: Displays a grid/list of published exams with start buttons.
+     * ExamTakingView: Standardized layout showing active questions, remaining choices, and submit/results cards.
+     * QuestionCard: Modular multiple-choice question layout showing option actions, selections, and correct/incorrect results highlight blocks.
 
 6. Services Sandbox Page (/sandbox) [PROTECTED]
    - Access limited to authenticated logged-in users.
@@ -175,16 +179,30 @@ EXAM STATUS MANAGEMENT
    - It notifies the teacher of a successful state transition via NotificationService and logs the change via LoggerService.
 
 3. Student Restriction Flow:
-   - When a student searches for an exam ID in StudentPortal:
-     - The portal fetches the exam via getExamById(id).
-     - If the exam is not found or has status other than 'published' (i.e. 'draft' or 'closed'), access is denied and an error message is shown.
+   - The student portal automatically lists only published exams retrieved via examService.getAllExams(). Draft or closed exams are never shown to the student.
+   - When starting an exam, the student enters the active ExamTakingView.
    - When submitting the answers:
-     - The portal does a final fetch of the exam status.
+     - The portal does a final fetch of the exam status via getExamById(examId).
      - If the exam was closed or drafted by the teacher while the student was taking it, submission is blocked and an error alert is displayed.
      - Successfully submitted active exams trigger a NotificationService success message and are logged in LoggerService.
 
 4. Data Changes in Mock DB:
    - The status is stored in each exam object in the `exams` array (inside `api/mockDb.js`) as a string property named `status` with one of three values: 'draft', 'published', or 'closed'.
+STUDENT PORTAL MODULAR FLOW
+===========================
+1. Exam List Rendering:
+   - On component mount, StudentPortal calls examService.getAllExams() to fetch all exam records.
+   - The list is filtered to only include exams with status 'published'.
+   - The filtered array is passed to StudentExamList, which renders a grid of active exams.
+
+2. Active Taking View:
+   - Clicking "Start Exam" on any exam card updates the state, mounting the ExamTakingView.
+   - ExamTakingView maps over the exam questions, rendering a QuestionCard for each question.
+   - Each QuestionCard displays the question text and options. Clicking an option calls onSelectAnswer to save the selected answer in StudentPortal state.
+
+3. Submission Validation:
+   - The "Submit Assessment" button is disabled until the student has answered every question in the exam.
+   - Clicking "Submit Assessment" verifies the latest status of the exam. If published, it locks the answers, grades the exam, and shows the score and correct/incorrect answers inside QuestionCard.
 
 
 GENERIC SUPPORTING SERVICES
@@ -268,11 +286,15 @@ client/src/
     ExamCard.jsx       - Individual exam component view
     ExamList.jsx       - Grid representation component for exams
     ScoreTable.jsx     - Grade table layout component
-  __tests__/
+    StudentExamList.jsx - Component rendering published exams list
+    QuestionCard.jsx   - Component rendering individual multiple-choice question
+    ExamTakingView.jsx - Component rendering active quiz taking workflow
+   __tests__/
     AuthService.test.js - Vitest tests for auth logic
     GenericServices.test.js - Vitest tests for generic storage, logs, notifs, configs services
     NavigationAndRouting.test.jsx - Vitest rendering tests for ProtectedRoute and Navigation links
     TeacherDashboard.test.jsx - Vitest unit tests verifying exam card loads and scores table triggers
+    StudentExamList.test.jsx - Vitest unit and integration tests for student portal components
   App.jsx              - Main router, route setups, and application entry point
   TeacherDashboard.jsx - Teacher view controller mapping data to components
   StudentPortal.jsx    - Student view
@@ -316,6 +338,11 @@ All services and routing components are fully covered by automated unit tests ru
    - Exams Binding: Verifies exam card bindings (titles, question size, status) resolve on successful response.
    - Click Scores: Confirms click events trigger data calls and accurately map scores to clean tables.
    - Error handling: Confirms API exception triggers result in correct NotificationService.error calls.
+7. Student Exam List & Taking Test Cases:
+   - Student page shows only published exams (draft/closed exams filtered out).
+   - Student can start an exam (clicking start loads ExamTakingView).
+   - Question options render correctly in QuestionCard.
+   - Submit is disabled until all questions are answered in ExamTakingView.
 
 
 DEVELOPMENT RULES

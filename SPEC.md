@@ -41,6 +41,13 @@ Refactored into a highly modular, decoupled structure:
 - `ExamForm.jsx` — form component managing inputs for exam title and dynamic questions list with options and correct answers, including full client-side validations.
 - `DeleteExamModal.jsx` — deletion confirmation modal.
 
+## Student Portal Workspace
+Refactored into a modular, component-driven architecture:
+- `StudentPortal.jsx` — mounts and fetches all exams on load using `getAllExams()`, filters list to published exams, and handles view state.
+- `StudentExamList.jsx` — renders grid/list of published exams and triggers the callback to start a selected exam.
+- `ExamTakingView.jsx` — renders the active assessment view with list of questions, exit controls, validation block, and final results view.
+- `QuestionCard.jsx` — renders a single multiple-choice question with option interactions, active selections, and final correctness highlight states.
+
 ## Architecture & Generic Services
 Modular, decoupled, and OOP-oriented structure:
 - `mockDb.js` — in-memory data store (users, exams, scores)
@@ -71,6 +78,7 @@ Unit and component tests execute in Vitest with a browser-like `jsdom` environme
 - **Teacher Dashboard tests**: loader triggers validation, mock exams binding verification, view grades API checks, and notification failures intercept testing
 - **Exam CRUD tests**: create exam calls service with correct data, edit exam updates exam, delete exam removes exam, validation prevents empty title/question
 - **Exam Status tests**: teacher can change status, student only sees published exams, closed exam blocks submission, draft exam is hidden from student
+- **Student Exam List & Taking tests**: student page shows only published exams, student can start an exam, question options render correctly, submit is disabled until all questions answered
 
 ## Development Workflow
 - Feature branches created from `dev`

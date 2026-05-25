@@ -97,61 +97,52 @@ describe('Exam Status Management', () => {
   });
 
   it('should block student from seeing or starting draft and closed exams', async () => {
-    getExamById.mockImplementation((id) => {
-      const exam = mockExams.find((e) => e.id === Number(id));
-      return Promise.resolve(exam || null);
-    });
+    getAllExams.mockResolvedValue([...mockExams]);
 
     render(<StudentPortal />);
 
-    const input = screen.getByPlaceholderText(/Exam ID/i);
-    const startButton = screen.getByRole('button', { name: /Start Exam/i });
-
-    fireEvent.change(input, { target: { value: '1' } });
-    fireEvent.click(startButton);
-
     await waitFor(() => {
-      expect(screen.getByText(/No exam found with ID "1"./i)).toBeTruthy();
+      expect(screen.getByText('React Basics')).toBeTruthy();
     });
 
     expect(screen.queryByText('JS Basics')).toBeNull();
   });
 
   it('should allow student to start published exams', async () => {
-    getExamById.mockImplementation((id) => {
-      const exam = mockExams.find((e) => e.id === Number(id));
-      return Promise.resolve(exam || null);
-    });
+    getAllExams.mockResolvedValue([...mockExams]);
 
     render(<StudentPortal />);
 
-    const input = screen.getByPlaceholderText(/Exam ID/i);
-    const startButton = screen.getByRole('button', { name: /Start Exam/i });
+    await waitFor(() => {
+      expect(screen.getByText('React Basics')).toBeTruthy();
+    });
 
-    fireEvent.change(input, { target: { value: '2' } });
+    const startButton = screen.getByRole('button', { name: /Start Exam/i });
     fireEvent.click(startButton);
 
     await waitFor(() => {
-      expect(screen.getByText('React Basics')).toBeTruthy();
+      expect(screen.getByText('Active Assessment')).toBeTruthy();
     });
   });
 
   it('should block submission if exam becomes closed while student is taking it', async () => {
     let mockExamState = { ...mockExams[1] };
+    getAllExams.mockResolvedValue([mockExamState]);
     getExamById.mockImplementation((id) => {
       return Promise.resolve(mockExamState);
     });
 
     render(<StudentPortal />);
 
-    const input = screen.getByPlaceholderText(/Exam ID/i);
-    const startButton = screen.getByRole('button', { name: /Start Exam/i });
+    await waitFor(() => {
+      expect(screen.getByText('React Basics')).toBeTruthy();
+    });
 
-    fireEvent.change(input, { target: { value: '2' } });
+    const startButton = screen.getByRole('button', { name: /Start Exam/i });
     fireEvent.click(startButton);
 
     await waitFor(() => {
-      expect(screen.getByText('React Basics')).toBeTruthy();
+      expect(screen.getByText('Active Assessment')).toBeTruthy();
     });
 
     const optionBtn = screen.getByRole('button', { name: /^A$/ });
