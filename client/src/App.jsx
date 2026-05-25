@@ -1,99 +1,67 @@
 import { useState } from 'react';
+import authService, { ROLES } from './services/AuthService';
+import LoginPage from './components/LoginPage';
+import RegisterPage from './components/RegisterPage';
 import TeacherDashboard from './TeacherDashboard';
 import StudentPortal from './StudentPortal';
 
 function App() {
-  // ── Login state ────────────────────────────────────
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [message, setMessage] = useState('');
+  const [user, setUser] = useState(authService.getCurrentUser());
+  const [authPage, setAuthPage] = useState('login');
 
-  // ── Role toggle state ──────────────────────────────
-  const [role, setRole] = useState('teacher'); // 'teacher' | 'student'
-
-  const isTeacher = role === 'teacher';
-
-  // ── Login handler ──────────────────────────────────
-  const handleLogin = () => {
-    if (username.trim() !== '' && password.trim() !== '') {
-      setMessage('Welcome Admin');
-      setIsLoggedIn(true);
-    } else {
-      setMessage('Please fill all fields');
-    }
+  const handleLogin = async (username, password) => {
+    const loggedInUser = await authService.login(username, password);
+    setUser(loggedInUser);
   };
 
-  // ── Login screen ───────────────────────────────────
-  if (!isLoggedIn) {
+  const handleRegister = async (userData) => {
+    const newUser = await authService.register(userData);
+    setUser(newUser);
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    setUser(null);
+    setAuthPage('login');
+  };
+
+  if (!user) {
+    if (authPage === 'register') {
+      return (
+        <RegisterPage
+          onRegister={handleRegister}
+          onSwitchToLogin={() => setAuthPage('login')}
+        />
+      );
+    }
     return (
-      <div className="container py-5">
-        <div className="row justify-content-center">
-          <div className="col-md-5">
-            <div className="card shadow">
-              <div className="card-body">
-                <h2 className="card-title text-center mb-4">📝 E-Test Login</h2>
-
-                <div className="mb-3">
-                  <label className="form-label">Username</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Enter username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Password</label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    placeholder="Enter password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-
-                <button className="btn btn-primary w-100" onClick={handleLogin}>
-                  Login
-                </button>
-
-                {message && (
-                  <div className="alert alert-danger mt-3 mb-0 text-center">
-                    {message}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <LoginPage
+        onLogin={handleLogin}
+        onSwitchToRegister={() => setAuthPage('register')}
+      />
     );
   }
 
-  // ── Main app (after login) ─────────────────────────
   return (
     <div className="container py-4">
-      {/* ── Navbar / Role Toggle ──────────────────────── */}
       <nav className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="h3 mb-0">📝 E-Test System</h1>
-        <div>
-          <span className="badge bg-info me-3">{message}</span>
-          <button
-            className={`btn ${isTeacher ? 'btn-success' : 'btn-warning'}`}
-            onClick={() => setRole(isTeacher ? 'student' : 'teacher')}
-          >
-            Switch to {isTeacher ? 'Student' : 'Teacher'} View
+        <div className="d-flex align-items-center gap-3">
+          <span className="badge bg-info fs-6 fw-normal px-3 py-2" style={{ borderRadius: '10px' }}>
+            {user.fullName}
+          </span>
+          <span className={`badge fs-6 fw-normal px-3 py-2 ${user.role === ROLES.TEACHER ? 'bg-success' : 'bg-warning text-dark'}`} style={{ borderRadius: '10px' }}>
+            {user.role}
+          </span>
+          <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
+            Logout
           </button>
         </div>
       </nav>
 
       <hr />
 
-      {/* ── Conditional view ──────────────────────────── */}
-      {isTeacher ? <TeacherDashboard /> : <StudentPortal />}
+      {user.role === ROLES.TEACHER ? <TeacherDashboard /> : <StudentPortal />}
     </div>
   );
 }

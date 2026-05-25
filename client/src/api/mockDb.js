@@ -1,11 +1,13 @@
-// ============================================================
-// Mock Database — simulates server-side data
-// ============================================================
+export const ROLES = {
+  TEACHER: 'TEACHER',
+  STUDENT: 'STUDENT',
+};
 
 export const exams = [
   {
     id: 1,
     title: 'JavaScript Fundamentals',
+    status: 'published',
     questions: [
       {
         id: 'q1',
@@ -30,6 +32,7 @@ export const exams = [
   {
     id: 2,
     title: 'React Essentials',
+    status: 'published',
     questions: [
       {
         id: 'q1',
@@ -65,6 +68,7 @@ export const exams = [
   {
     id: 3,
     title: 'Node.js Basics',
+    status: 'draft',
     questions: [
       {
         id: 'q1',
@@ -82,7 +86,44 @@ export const exams = [
   },
 ];
 
-// ── Student Scores ─────────────────────────────────────────
+export const users = [
+  {
+    id: 1,
+    username: 'teacher1',
+    password: 'pass123',
+    fullName: 'Sarah Cohen',
+    role: ROLES.TEACHER,
+  },
+  {
+    id: 2,
+    username: 'teacher2',
+    password: 'pass123',
+    fullName: 'David Levi',
+    role: ROLES.TEACHER,
+  },
+  {
+    id: 3,
+    username: 'student1',
+    password: 'pass123',
+    fullName: 'Alice Johnson',
+    role: ROLES.STUDENT,
+  },
+  {
+    id: 4,
+    username: 'student2',
+    password: 'pass123',
+    fullName: 'Bob Smith',
+    role: ROLES.STUDENT,
+  },
+  {
+    id: 5,
+    username: 'student3',
+    password: 'pass123',
+    fullName: 'Charlie Davis',
+    role: ROLES.STUDENT,
+  },
+];
+
 export const studentScores = [
   { studentName: 'Alice Johnson', examId: 1, score: 85 },
   { studentName: 'Bob Smith', examId: 1, score: 72 },
