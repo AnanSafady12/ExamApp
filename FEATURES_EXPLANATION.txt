@@ -111,6 +111,57 @@ TEACHER DASHBOARD DATA FLOW
    - If any API promise fails (e.g., mockDB network error), a catch handler triggers NotificationService.error() which renders visual toast blocks and schedules log outputs.
 
 
+TEACHER EXAM CRUD MANAGEMENT FLOW
+=================================
+1. Create Flow:
+   - Teacher clicks "+ Create New Exam" on the Teacher Dashboard.
+   - The ExamForm component mounts in creation mode.
+   - The teacher enters an exam title and adds/modifies questions (each with text, 4 options, and a correct answer selection).
+   - Upon submitting, validation is performed: checking that the title is not empty, and all questions have text, options, and a selected correct answer.
+   - Once validated, createExam(payload) from examService is called.
+   - The new exam is stored in the mock database (mockDb.js) in the `exams` array with a generated auto-incrementing ID.
+   - On success, the UI refreshes the exam list, displays a success toast via NotificationService, and logs the success in LoggerService.
+
+2. Edit Flow:
+   - Teacher clicks the "✏️ Edit" button on any ExamCard.
+   - The ExamForm component mounts in edit mode, populated with the selected exam's current title and questions.
+   - The teacher modifies the title or questions and submits.
+   - After validation, updateExam(id, updates) from examService is called.
+   - The mock database is updated with the modified exam object.
+   - On success, the UI refreshes, notifies the user via NotificationService, and logs the action in LoggerService.
+
+3. Delete Flow:
+   - Teacher clicks the "🗑️ Delete" button on an ExamCard.
+   - The DeleteExamModal confirmation dialog is displayed, showing the exam title.
+   - The teacher confirms deletion.
+   - deleteExam(id) from examService is called.
+   - The exam is spliced and removed from the `exams` array in the mock database.
+   - On success, the exam card is removed from the UI, a success notification is shown, and the action is logged in LoggerService.
+
+4. Data Structure of Exam:
+   - Each exam object has the following shape:
+     {
+       id: number,
+       title: string,
+       status: string (e.g. 'draft', 'published'),
+       questions: Array<{
+         id: string,
+         text: string,
+         options: Array<string>,
+         correctAnswer: string
+       }>
+     }
+
+5. Service Functions Used:
+   - examService.createExam(exam)
+   - examService.updateExam(id, updates)
+   - examService.deleteExam(id)
+   - examService.getAllExams() (to refresh the dashboard exam list)
+
+6. Mock DB Storage:
+   - The data is kept in-memory in the `exams` array exported by `api/mockDb.js`.
+
+
 GENERIC SUPPORTING SERVICES
 ===========================
 These OOP service classes are fully generic, reusable modules built to support any client-side JavaScript or React application, independent of ExamApp business logic.
