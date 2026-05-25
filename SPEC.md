@@ -55,6 +55,14 @@ Modular, decoupled, and OOP-oriented structure:
 ### Reusability
 The services (`StorageService`, `LoggerService`, `NotificationService`, `ConfigurationService`) contain zero domain-specific references, allowing drop-in application inside any future client-side modules or other standalone web projects.
 
+## Exam Status Management
+An exam is in one of three states:
+- `draft`: hidden from students.
+- `published`: visible and startable by students.
+- `closed`: visible on the teacher dashboard, but students cannot start or submit it.
+
+The status is stored as a `status` string attribute in the mock DB. Changing the status dropdown in the teacher dashboard triggers `updateExam(id, { status: newStatus })`, notifying and logging the transition. The student portal fetches latest exam data on fetch and submission, rejecting non-published exams with proper error notifications and action logging.
+
 ## Testing & Validation
 Unit and component tests execute in Vitest with a browser-like `jsdom` environment:
 - **Auth tests**: login success/fail, register success/duplicate/validation, logout, getCurrentUser, role checks
@@ -62,6 +70,7 @@ Unit and component tests execute in Vitest with a browser-like `jsdom` environme
 - **Routing & Component tests**: dynamic Navigation menu rendering, teacher/student links assertion, ProtectedRoute boundary blocks, and redirection handling
 - **Teacher Dashboard tests**: loader triggers validation, mock exams binding verification, view grades API checks, and notification failures intercept testing
 - **Exam CRUD tests**: create exam calls service with correct data, edit exam updates exam, delete exam removes exam, validation prevents empty title/question
+- **Exam Status tests**: teacher can change status, student only sees published exams, closed exam blocks submission, draft exam is hidden from student
 
 ## Development Workflow
 - Feature branches created from `dev`

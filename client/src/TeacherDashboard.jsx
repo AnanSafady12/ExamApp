@@ -97,6 +97,18 @@ function TeacherDashboard() {
     setEditingExam(null);
   };
 
+  const handleStatusChange = async (examId, newStatus) => {
+    try {
+      await updateExam(examId, { status: newStatus });
+      notificationService.success(`Exam status updated to ${newStatus}`);
+      loggerService.success(`Updated exam ID ${examId} status to ${newStatus}`);
+      await fetchExams();
+    } catch (err) {
+      notificationService.error(`Failed to update status: ${err.message}`);
+      loggerService.error(`Failed to update status: ${err.message}`);
+    }
+  };
+
   const handleDeleteConfirm = async (examId) => {
     try {
       await deleteExam(examId);
@@ -159,6 +171,7 @@ function TeacherDashboard() {
         onViewScores={handleViewScores}
         onEdit={handleEditClick}
         onDelete={handleDeleteClick}
+        onStatusChange={handleStatusChange}
       />
 
       <ScoreTable
