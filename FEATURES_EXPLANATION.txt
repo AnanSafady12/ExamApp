@@ -43,6 +43,49 @@ PAGES
    - Submit button (enabled only when all questions answered)
    - Results screen with correct/incorrect highlights and percentage score
 
+5. Services Sandbox Page
+   - Dynamic, tabbed test bench containing interactive fields for testing storage, triggering notifications, inspecting active logs, viewing the log database, and reading/modifying configuration parameters.
+
+
+GENERIC SUPPORTING SERVICES
+===========================
+These OOP service classes are fully generic, reusable modules built to support any client-side JavaScript or React application, independent of ExamApp business logic.
+
+1. StorageService (StorageService.js)
+   - Reusability: Generic key-value wrapper for window.localStorage. Handles JSON serialization/deserialization transparently, provides optional default values, and scopes storage operations using a custom key prefix namespace.
+   - Core API:
+     * set(key, value): Serializes and stores key.
+     * get(key, defaultValue): Deserializes key, returns defaultValue if not found.
+     * remove(key): Removes key.
+     * clear(): Clears all keys starting with the namespace prefix.
+
+2. NotificationService (NotificationService.js)
+   - Reusability: Decouples notification trigger logic from UI components. Any component or service can trigger a message, and UI components can register listeners to receive them instantly.
+   - Core API:
+     * success(message): Registers and dispatches a success alert, logging to history.
+     * error(message): Registers and dispatches an error alert, logging to history.
+     * warning(message): Registers and dispatches a warning alert, logging to history.
+     * getHistory(): Returns full chronological array of triggered notifications.
+     * clearHistory(): Resets local activity log history.
+     * subscribe(listener): Registers callbacks triggered upon new alerts. Returns an unsubscribe handler.
+
+3. LoggerService (LoggerService.js)
+   - Reusability: Provides standardized audit trailing. Centralizes application log collections, useful for remote tracking or local console debugging.
+   - Core API:
+     * info(message): Stores an INFO level log with timestamp.
+     * success(message): Stores a SUCCESS level log with timestamp.
+     * error(message): Stores an ERROR level log with timestamp.
+     * warning(message): Stores a WARNING level log with timestamp.
+     * getLogs(): Returns the logs collection (capped at the last 10 entries).
+     * clearLogs(): Resets logs.
+
+4. ConfigurationService (ConfigurationService.js)
+   - Reusability: Consolidates environment metadata, static defaults, and backend parameters. Helps swap environment variables or static constants dynamically.
+   - Core API:
+     * get(key, defaultValue): Retrieves static configuration value or fallback.
+     * set(key, value): Sets configuration overrides dynamically.
+     * getAll(): Returns cloned object of current configuration keys and values.
+
 
 AUTH FLOW
 =========
@@ -100,21 +143,54 @@ client/src/
   services/
     StorageService.js  - OOP localStorage wrapper class
     AuthService.js     - OOP authentication logic class
+    LoggerService.js   - OOP application logger class
+    NotificationService.js - OOP alert and activities notification class
+    ConfigurationService.js - OOP runtime configurations class
   components/
     LoginPage.jsx      - Login form component
     RegisterPage.jsx   - Registration form component
+    SandboxPage.jsx    - Interactive sandbox dashboard for services validation
   __tests__/
     AuthService.test.js - Vitest tests for auth logic
+    GenericServices.test.js - Vitest tests for generic storage, logs, notifs, configs services
   App.jsx              - Root component with auth routing
   TeacherDashboard.jsx - Teacher view
   StudentPortal.jsx    - Student view
   main.jsx             - React entry point
 
 
+UNIT TESTS AND VALIDATION
+=========================
+All services are fully covered by automated unit tests running on Vitest under the browser-like jsdom environment.
+
+1. StorageService Test Cases:
+   - Saves and retrieves values with full serialization integrity.
+   - Gracefully returns defined fallbacks/default values on non-existent keys.
+   - Removes targeted keys successfully.
+   - Clears prefixed keys cleanly without modifying native outside localStorage items.
+
+2. LoggerService Test Cases:
+   - Registers all levels of logs (INFO, SUCCESS, ERROR, WARNING) with automatic timestamps.
+   - FIFO Buffer: Caps total in-memory size to the configured threshold (e.g. 5 or 10), shifting out oldest records as new ones arrive.
+   - Clears logs cache accurately.
+
+3. NotificationService Test Cases:
+   - Dispatches success, error, warning objects with unique, automatic IDs and timestamps.
+   - Forwards logs automatically to the integrated LoggerService.
+   - Subscriber system: Correctly notifies all active listeners and stops dispatching once unsubscribe handles are run.
+
+4. ConfigurationService Test Cases:
+   - Returns default configurations correctly (appName, version, defaultRole, API delay).
+   - Returns fallback variables if key doesn't exist.
+   - Modifies and overrides existing parameters or appends new metadata properties at runtime.
+
+No complex external HTTP or API mocks were needed, as the services operate cleanly in independent JS spaces, with jsdom fully simulating the local browser environment.
+
+
 DEVELOPMENT RULES
 =================
 - All work is done on the dev branch, never directly on main
-- Feature branches are created from dev (e.g. feature/auth-login-register)
+- Feature branches are created from dev (e.g. feature/auth-login-register, feature/generic-services)
 - Every module or feature gets its own separate commit
 - Comments and notes are committed separately after each feature
 - The project follows modular development: services first, then teacher features, then student features

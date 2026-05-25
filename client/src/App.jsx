@@ -4,10 +4,12 @@ import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import TeacherDashboard from './TeacherDashboard';
 import StudentPortal from './StudentPortal';
+import SandboxPage from './components/SandboxPage';
 
 function App() {
   const [user, setUser] = useState(authService.getCurrentUser());
   const [authPage, setAuthPage] = useState('login');
+  const [view, setView] = useState('dashboard');
 
   const handleLogin = async (username, password) => {
     const loggedInUser = await authService.login(username, password);
@@ -23,6 +25,7 @@ function App() {
     authService.logout();
     setUser(null);
     setAuthPage('login');
+    setView('dashboard');
   };
 
   if (!user) {
@@ -45,8 +48,16 @@ function App() {
   return (
     <div className="container py-4">
       <nav className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h3 mb-0">📝 E-Test System</h1>
+        <h1 className="h3 mb-0" style={{ cursor: 'pointer' }} onClick={() => setView('dashboard')}>
+          📝 E-Test System
+        </h1>
         <div className="d-flex align-items-center gap-3">
+          <button
+            className={`btn btn-sm ${view === 'sandbox' ? 'btn-dark' : 'btn-outline-dark'}`}
+            onClick={() => setView(view === 'sandbox' ? 'dashboard' : 'sandbox')}
+          >
+            {view === 'sandbox' ? 'Back to App' : '🛠️ Services Sandbox'}
+          </button>
           <span className="badge bg-info fs-6 fw-normal px-3 py-2" style={{ borderRadius: '10px' }}>
             {user.fullName}
           </span>
@@ -61,7 +72,13 @@ function App() {
 
       <hr />
 
-      {user.role === ROLES.TEACHER ? <TeacherDashboard /> : <StudentPortal />}
+      {view === 'sandbox' ? (
+        <SandboxPage />
+      ) : user.role === ROLES.TEACHER ? (
+        <TeacherDashboard />
+      ) : (
+        <StudentPortal />
+      )}
     </div>
   );
 }

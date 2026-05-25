@@ -9,26 +9,35 @@ class StorageService {
     return `${this.prefix}${key}`;
   }
 
-  get(key) {
+  get(key, defaultValue = null) {
     try {
       const raw = localStorage.getItem(this._key(key));
-      return raw ? JSON.parse(raw) : null;
+      return raw ? JSON.parse(raw) : defaultValue;
     } catch {
-      return null;
+      return defaultValue;
     }
   }
 
   set(key, value) {
-    localStorage.setItem(this._key(key), JSON.stringify(value));
+    try {
+      localStorage.setItem(this._key(key), JSON.stringify(value));
+    } catch {
+    }
   }
 
   remove(key) {
-    localStorage.removeItem(this._key(key));
+    try {
+      localStorage.removeItem(this._key(key));
+    } catch {
+    }
   }
 
   clear() {
-    const keys = Object.keys(localStorage).filter(k => k.startsWith(this.prefix));
-    keys.forEach(k => localStorage.removeItem(k));
+    try {
+      const keys = Object.keys(localStorage).filter(k => k.startsWith(this.prefix));
+      keys.forEach(k => localStorage.removeItem(k));
+    } catch {
+    }
   }
 }
 

@@ -21,6 +21,7 @@ Online examination system where teachers create and manage exams, and students t
 2. **Register** — full name, username, password, role selector
 3. **Teacher Dashboard** — exam list, score viewer
 4. **Student Portal** — exam lookup, quiz taking, results
+5. **Services Sandbox** — interactive panel to manually inspect and verify all generic service endpoints
 
 ## Auth Flow
 - Login/Register via AuthService (OOP class)
@@ -28,17 +29,24 @@ Online examination system where teachers create and manage exams, and students t
 - Role-based rendering: TEACHER → TeacherDashboard, STUDENT → StudentPortal
 - Logout clears storage and returns to login
 
-## Architecture
+## Architecture & Generic Services
+Modular, decoupled, and OOP-oriented structure:
 - `mockDb.js` — in-memory data store (users, exams, scores)
 - `userService.js` — async user auth operations with simulated delay
 - `examService.js` — async exam CRUD wrappers with simulated delay
-- `StorageService.js` — OOP localStorage wrapper with prefix namespacing
+- `StorageService.js` — OOP localStorage wrapper with prefix namespacing and JSON support
 - `AuthService.js` — OOP auth logic (login, register, logout, role checks)
-- Components render data from services, ready for real backend swap
+- `LoggerService.js` — OOP FIFO logger storing at most the last 10 logs
+- `NotificationService.js` — OOP alerts listener and activities history tracker
+- `ConfigurationService.js` — OOP key-value configuration overrides engine
 
-## Testing
-- Vitest with jsdom environment
-- Auth tests: login success/fail, register success/duplicate/validation, logout, getCurrentUser, role checks
+### Reusability
+The services (`StorageService`, `LoggerService`, `NotificationService`, `ConfigurationService`) contain zero domain-specific references, allowing drop-in application inside any future client-side modules or other standalone web projects.
+
+## Testing & Validation
+Unit tests execute in Vitest with a browser-like `jsdom` sandbox environment:
+- **Auth tests**: login success/fail, register success/duplicate/validation, logout, getCurrentUser, role checks
+- **Services tests**: Storage serialization/defaults/prefixes, Logger FIFO log buffer, Notification publishers/history/categories, Configuration runtime overrides
 
 ## Development Workflow
 - Feature branches created from `dev`
