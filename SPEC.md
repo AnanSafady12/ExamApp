@@ -70,6 +70,14 @@ An exam is in one of three states:
 
 The status is stored as a `status` string attribute in the mock DB. Changing the status dropdown in the teacher dashboard triggers `updateExam(id, { status: newStatus })`, notifying and logging the transition. The student portal fetches latest exam data on fetch and submission, rejecting non-published exams with proper error notifications and action logging.
 
+## Exam Submission & Score Saving
+Upon clicking "Submit Assessment":
+- Score percentage is calculated based on correct answers.
+- User profile info is retrieved from `AuthService`.
+- A score record containing `studentId`, `studentName`, `examId`, `examTitle`, `score` (percentage), and `date` is saved to the mock database via `examService.saveScore(scoreRecord)`.
+- Correct and incorrect options are highlighted on screen for student review.
+- The new score record can be retrieved and viewed by the teacher later using `examService.getScoresByExam(examId)`.
+
 ## Testing & Validation
 Unit and component tests execute in Vitest with a browser-like `jsdom` environment:
 - **Auth tests**: login success/fail, register success/duplicate/validation, logout, getCurrentUser, role checks

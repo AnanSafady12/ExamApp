@@ -60,3 +60,8 @@ export const getScoresByExam = (examId) => {
   const filtered = studentScores.filter((s) => s.examId === Number(examId));
   return simulateRequest(filtered);
 };
+
+export const saveScore = (scoreRecord) => {
+  studentScores.push(scoreRecord);
+  return simulateRequest(scoreRecord);
+};
