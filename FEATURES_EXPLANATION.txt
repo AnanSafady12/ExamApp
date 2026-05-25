@@ -22,37 +22,99 @@ PAGES
 =====
 1. Login Page
    - Username and password fields
-   - Shared entry point for both teachers and students
+   - Error messages for invalid credentials
+   - Link to Register page
+   - Demo accounts displayed for testing
 
-2. Teacher Dashboard
+2. Register Page
+   - Full name, username, password fields
+   - Role selector (Student or Teacher)
+   - Validates all fields and checks for duplicate usernames
+   - Link back to Login page
+
+3. Teacher Dashboard
    - Displays all exams as cards
    - Shows question count per exam
    - View Scores button opens a scores table for each exam
 
-3. Student Portal
+4. Student Portal
    - Search by Exam ID to load an exam
    - Multiple-choice question interface with option selection
    - Submit button (enabled only when all questions answered)
    - Results screen with correct/incorrect highlights and percentage score
 
 
+AUTH FLOW
+=========
+1. User opens the app
+2. If no user is saved in localStorage, the Login page is shown
+3. User can either:
+   a. Login with existing credentials (matched against mock DB users array)
+   b. Switch to Register page and create a new account
+4. On successful login/register:
+   - User object (without password) is saved to localStorage via StorageService
+   - App renders the appropriate dashboard based on user role
+5. Navbar shows user's full name, role badge, and Logout button
+6. Logout clears the user from localStorage and returns to Login page
+7. On page refresh, the app checks localStorage for a saved user and auto-restores the session
+
+Data flow:
+   Form (username, password) -> AuthService.login() -> userService.findUserByCredentials() -> mockDb.users
+   Form (fullName, username, password, role) -> AuthService.register() -> userService.createUser() -> mockDb.users
+
+Where user is saved:
+   localStorage key: "examapp_current_user"
+   Format: JSON object { id, username, fullName, role }
+
+How role affects UI:
+   - TEACHER role -> TeacherDashboard component is rendered
+   - STUDENT role -> StudentPortal component is rendered
+   - Role is determined from the stored user object, not a manual toggle
+
+
 MOCK DB AND API
 ===============
 The app uses an in-memory mock database (mockDb.js) containing:
-- exams: array of exam objects, each with id, title, and questions array
+- users: array of user objects with id, username, password, fullName, and role (TEACHER or STUDENT)
+- exams: array of exam objects, each with id, title, status, and questions array
 - studentScores: array of score records with studentName, examId, and score
 
-The exam service (examService.js) wraps this data with async functions that simulate 600ms network delay:
-- getAllExams, getExamById, createExam, updateExam, deleteExam
-- getAllScores, getScoresByExam
+Services layer:
+- userService.js: findUserByCredentials, findUserByUsername, createUser (400ms simulated delay)
+- examService.js: getAllExams, getExamById, createExam, updateExam, deleteExam, getAllScores, getScoresByExam (600ms simulated delay)
+
+OOP Services:
+- StorageService (class): wraps localStorage with prefix namespacing and JSON serialization
+- AuthService (class): login, register, logout, getCurrentUser, isLoggedIn, getRole, isTeacher, isStudent
 
 This layer is designed so that when a real backend is built, only the service imports need to change.
+
+
+FILES STRUCTURE
+===============
+client/src/
+  api/
+    mockDb.js          - In-memory data (users, exams, scores)
+    examService.js     - Async exam CRUD wrappers
+    userService.js     - Async user auth wrappers
+  services/
+    StorageService.js  - OOP localStorage wrapper class
+    AuthService.js     - OOP authentication logic class
+  components/
+    LoginPage.jsx      - Login form component
+    RegisterPage.jsx   - Registration form component
+  __tests__/
+    AuthService.test.js - Vitest tests for auth logic
+  App.jsx              - Root component with auth routing
+  TeacherDashboard.jsx - Teacher view
+  StudentPortal.jsx    - Student view
+  main.jsx             - React entry point
 
 
 DEVELOPMENT RULES
 =================
 - All work is done on the dev branch, never directly on main
-- Feature branches are created from dev (e.g. feature/login, feature/exam-crud)
+- Feature branches are created from dev (e.g. feature/auth-login-register)
 - Every module or feature gets its own separate commit
 - Comments and notes are committed separately after each feature
 - The project follows modular development: services first, then teacher features, then student features
