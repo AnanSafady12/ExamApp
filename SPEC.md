@@ -5,6 +5,7 @@ Online examination system where teachers create and manage exams, and students t
 
 ## Tech Stack
 - React 19 + Vite 8
+- React Router 6 (`react-router-dom` using HashRouter)
 - Bootstrap 5.3
 - Vitest + jsdom (testing)
 - Mock API layer (simulated async services)
@@ -16,18 +17,20 @@ Online examination system where teachers create and manage exams, and students t
 | Teacher | Create/edit/delete exams, view scores, set status  |
 | Student | Browse exams, take quizzes, view results           |
 
-## Pages
-1. **Login** — username/password form, demo credentials, link to register
-2. **Register** — full name, username, password, role selector
-3. **Teacher Dashboard** — exam list, score viewer
-4. **Student Portal** — exam lookup, quiz taking, results
-5. **Services Sandbox** — interactive panel to manually inspect and verify all generic service endpoints
+## Routing Schema (HashRouter)
+All routes are managed under `HashRouter` to prevent reload 404s on GitHub Pages:
+- `/` — redirects authenticated users to their correct workspace; redirects unauthenticated users to `/login`.
+- `/login` — login form, demo credentials, redirects active sessions back to `/`.
+- `/register` — user registration with role selection, redirects active sessions back to `/`.
+- `/teacher` [PROTECTED] — dashboard for teachers to manage exams and view logs.
+- `/student` [PROTECTED] — portal for students to take exams.
+- `/sandbox` [PROTECTED] — sandbox test bench to verify generic services.
+- `*` (Wildcard) — redirects to `/`.
 
-## Auth Flow
-- Login/Register via AuthService (OOP class)
-- User persisted in localStorage via StorageService (OOP class)
-- Role-based rendering: TEACHER → TeacherDashboard, STUDENT → StudentPortal
-- Logout clears storage and returns to login
+## Auth & Navigation Flow
+- Authentication managed through the `AuthService` and persistent in local storage under prefix-namespaced key.
+- Custom `ProtectedRoute` intercepts navigation requests, routing unauthenticated traffic to `/login`, and mismatches to their corresponding home routes.
+- A dynamic `NavigationMenu` component renders responsive links matched to the active role (`TEACHER` or `STUDENT`) with user profile indicators and a logout redirect action.
 
 ## Architecture & Generic Services
 Modular, decoupled, and OOP-oriented structure:
@@ -40,13 +43,11 @@ Modular, decoupled, and OOP-oriented structure:
 - `NotificationService.js` — OOP alerts listener and activities history tracker
 - `ConfigurationService.js` — OOP key-value configuration overrides engine
 
-### Reusability
-The services (`StorageService`, `LoggerService`, `NotificationService`, `ConfigurationService`) contain zero domain-specific references, allowing drop-in application inside any future client-side modules or other standalone web projects.
-
 ## Testing & Validation
-Unit tests execute in Vitest with a browser-like `jsdom` sandbox environment:
+Unit and component tests execute in Vitest with a browser-like `jsdom` environment:
 - **Auth tests**: login success/fail, register success/duplicate/validation, logout, getCurrentUser, role checks
 - **Services tests**: Storage serialization/defaults/prefixes, Logger FIFO log buffer, Notification publishers/history/categories, Configuration runtime overrides
+- **Routing & Component tests**: dynamic Navigation menu rendering, teacher/student links assertion, ProtectedRoute boundary blocks, and redirection handling
 
 ## Development Workflow
 - Feature branches created from `dev`

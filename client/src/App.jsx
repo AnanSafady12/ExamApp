@@ -1,15 +1,17 @@
 import { useState } from 'react';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import authService, { ROLES } from './services/AuthService';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import TeacherDashboard from './TeacherDashboard';
 import StudentPortal from './StudentPortal';
 import SandboxPage from './components/SandboxPage';
+import NavigationMenu from './components/NavigationMenu';
+import ProtectedRoute from './components/ProtectedRoute';
+import HomeRedirect from './components/HomeRedirect';
 
 function App() {
   const [user, setUser] = useState(authService.getCurrentUser());
-  const [authPage, setAuthPage] = useState('login');
-  const [view, setView] = useState('dashboard');
 
   const handleLogin = async (username, password) => {
     const loggedInUser = await authService.login(username, password);
@@ -24,62 +26,69 @@ function App() {
   const handleLogout = () => {
     authService.logout();
     setUser(null);
-    setAuthPage('login');
-    setView('dashboard');
   };
 
-  if (!user) {
-    if (authPage === 'register') {
-      return (
-        <RegisterPage
-          onRegister={handleRegister}
-          onSwitchToLogin={() => setAuthPage('login')}
-        />
-      );
-    }
-    return (
-      <LoginPage
-        onLogin={handleLogin}
-        onSwitchToRegister={() => setAuthPage('register')}
-      />
-    );
-  }
-
   return (
-    <div className="container py-4">
-      <nav className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h3 mb-0" style={{ cursor: 'pointer' }} onClick={() => setView('dashboard')}>
-          📝 E-Test System
-        </h1>
-        <div className="d-flex align-items-center gap-3">
-          <button
-            className={`btn btn-sm ${view === 'sandbox' ? 'btn-dark' : 'btn-outline-dark'}`}
-            onClick={() => setView(view === 'sandbox' ? 'dashboard' : 'sandbox')}
-          >
-            {view === 'sandbox' ? 'Back to App' : '🛠️ Services Sandbox'}
-          </button>
-          <span className="badge bg-info fs-6 fw-normal px-3 py-2" style={{ borderRadius: '10px' }}>
-            {user.fullName}
-          </span>
-          <span className={`badge fs-6 fw-normal px-3 py-2 ${user.role === ROLES.TEACHER ? 'bg-success' : 'bg-warning text-dark'}`} style={{ borderRadius: '10px' }}>
-            {user.role}
-          </span>
-          <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </nav>
+    <HashRouter>
+      <div className="container py-4">
+        {user && <NavigationMenu user={user} onLogout={handleLogout} />}
 
-      <hr />
+        <Routes>
+          <Route path="/" element={<HomeRedirect />} />
+          
+          <Route
+            path="/login"
+            element={
+              user ? (
+                <Navigate to="/" replace />
+              ) : (
+                <LoginPage onLogin={handleLogin} onSwitchToRegister={() => {}} />
+              )
+            }
+          />
+          
+          <Route
+            path="/register"
+            element={
+              user ? (
+                <Navigate to="/" replace />
+              ) : (
+                <RegisterPage onRegister={handleRegister} onSwitchToLogin={() => {}} />
+              )
+            }
+          />
 
-      {view === 'sandbox' ? (
-        <SandboxPage />
-      ) : user.role === ROLES.TEACHER ? (
-        <TeacherDashboard />
-      ) : (
-        <StudentPortal />
-      )}
-    </div>
+          <Route
+            path="/teacher"
+            element={
+              <ProtectedRoute allowedRole={ROLES.TEACHER}>
+                <TeacherDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/student"
+            element={
+              <ProtectedRoute allowedRole={ROLES.STUDENT}>
+                <StudentPortal />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/sandbox"
+            element={
+              <ProtectedRoute>
+                <SandboxPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </HashRouter>
   );
 }
 

@@ -18,33 +18,76 @@ USERS
    - Receives instant score and answer review after submission
 
 
-PAGES
-=====
-1. Login Page
-   - Username and password fields
-   - Error messages for invalid credentials
-   - Link to Register page
-   - Demo accounts displayed for testing
+PAGES & ROUTING
+===============
+The application utilizes React Router (HashRouter) to manage client-side routing, navigation menus, and protected role-based workspaces. Using HashRouter ensures robust support on static hostings like GitHub Pages by preventing deep reload 404 errors.
 
-2. Register Page
-   - Full name, username, password fields
-   - Role selector (Student or Teacher)
-   - Validates all fields and checks for duplicate usernames
-   - Link back to Login page
+1. Home / Root Route (/)
+   - Renders the HomeRedirect controller.
+   - Evaluates the user's active session and instantly redirects them to the appropriate workspace:
+     * Unauthenticated -> /login
+     * TEACHER -> /teacher
+     * STUDENT -> /student
 
-3. Teacher Dashboard
-   - Displays all exams as cards
-   - Shows question count per exam
-   - View Scores button opens a scores table for each exam
+2. Login Page (/login)
+   - Username and password fields.
+   - Redirects to root (/) if the user is already authenticated.
+   - Displays demo accounts for quick testing.
+   - Contains navigation Links to /register.
 
-4. Student Portal
-   - Search by Exam ID to load an exam
-   - Multiple-choice question interface with option selection
-   - Submit button (enabled only when all questions answered)
-   - Results screen with correct/incorrect highlights and percentage score
+3. Register Page (/register)
+   - Inputs: Full name, username, password, role selector (Student/Teacher).
+   - Validates fields and checks for duplicate usernames.
+   - Redirects to root (/) if the user is already authenticated.
+   - Contains navigation Links to /login.
 
-5. Services Sandbox Page
-   - Dynamic, tabbed test bench containing interactive fields for testing storage, triggering notifications, inspecting active logs, viewing the log database, and reading/modifying configuration parameters.
+4. Teacher Dashboard (/teacher) [PROTECTED]
+   - Access limited to authenticated users with the TEACHER role.
+   - Displays all exams as cards with question counts.
+   - View Scores button triggers the exam score details sheet.
+
+5. Student Portal (/student) [PROTECTED]
+   - Access limited to authenticated users with the STUDENT role.
+   - Allows search and loading of exams by ID.
+   - Multiple-choice question interface and submission card.
+
+6. Services Sandbox Page (/sandbox) [PROTECTED]
+   - Access limited to authenticated logged-in users.
+   - Test bench for StorageService, NotificationService, LoggerService, and ConfigurationService.
+
+
+PROTECTED ROUTES
+================
+A custom React router component, ProtectedRoute (ProtectedRoute.jsx), secures specific endpoints:
+1. User Authentication Check:
+   - Reads the active user token from StorageService.
+   - If no session exists, the component overrides the request and redirects the user to /login.
+2. User Role Authorization Check:
+   - If an allowedRole attribute is provided (e.g. TEACHER or STUDENT), the component verifies if the user's role matches.
+   - If the role does not match, the user is redirected to their appropriate home page (e.g., a student trying to access /teacher is rerouted to /student).
+
+
+NAVIGATION MENU (NavigationMenu.jsx)
+====================================
+The NavigationMenu component acts as the global client-side navigation menu rendered dynamically once a user session is active.
+- Features:
+  * Brand Link: Points back to root (/).
+  * Context-Sensitive Navigation Links:
+    - Renders the "👨‍🏫 Teacher Dashboard" button ONLY if the user has the TEACHER role.
+    - Renders the "🎓 Student Portal" button ONLY if the user has the STUDENT role.
+    - Renders the "🛠️ Services Sandbox" link to all authenticated users.
+  * Status Indicators: Displays the active user's full name and role badge clearly.
+  * Logout Button: Clears local storage session via AuthService, updates state, and routes the user back to /login.
+
+
+AUTH FLOW
+=========
+1. User opens the app
+2. App initializes the HashRouter and reads active sessions from localStorage.
+3. If unauthenticated, all attempts to hit protected endpoints (/teacher, /student, /sandbox) are blocked and redirected to /login.
+4. User logs in or registers. The session is serialized into localStorage under the "examapp_current_user" key.
+5. React state is updated, rendering the NavigationMenu.
+6. The user is redirected to the home route (/), which resolves to /teacher or /student depending on their role.
 
 
 GENERIC SUPPORTING SERVICES
@@ -87,34 +130,6 @@ These OOP service classes are fully generic, reusable modules built to support a
      * getAll(): Returns cloned object of current configuration keys and values.
 
 
-AUTH FLOW
-=========
-1. User opens the app
-2. If no user is saved in localStorage, the Login page is shown
-3. User can either:
-   a. Login with existing credentials (matched against mock DB users array)
-   b. Switch to Register page and create a new account
-4. On successful login/register:
-   - User object (without password) is saved to localStorage via StorageService
-   - App renders the appropriate dashboard based on user role
-5. Navbar shows user's full name, role badge, and Logout button
-6. Logout clears the user from localStorage and returns to Login page
-7. On page refresh, the app checks localStorage for a saved user and auto-restores the session
-
-Data flow:
-   Form (username, password) -> AuthService.login() -> userService.findUserByCredentials() -> mockDb.users
-   Form (fullName, username, password, role) -> AuthService.register() -> userService.createUser() -> mockDb.users
-
-Where user is saved:
-   localStorage key: "examapp_current_user"
-   Format: JSON object { id, username, fullName, role }
-
-How role affects UI:
-   - TEACHER role -> TeacherDashboard component is rendered
-   - STUDENT role -> StudentPortal component is rendered
-   - Role is determined from the stored user object, not a manual toggle
-
-
 MOCK DB AND API
 ===============
 The app uses an in-memory mock database (mockDb.js) containing:
@@ -150,18 +165,22 @@ client/src/
     LoginPage.jsx      - Login form component
     RegisterPage.jsx   - Registration form component
     SandboxPage.jsx    - Interactive sandbox dashboard for services validation
+    NavigationMenu.jsx - Global navbar component
+    ProtectedRoute.jsx - Client routing authentication blocker
+    HomeRedirect.jsx   - Role-based redirect router controller
   __tests__/
     AuthService.test.js - Vitest tests for auth logic
     GenericServices.test.js - Vitest tests for generic storage, logs, notifs, configs services
-  App.jsx              - Root component with auth routing
+    NavigationAndRouting.test.jsx - Vitest rendering tests for ProtectedRoute and Navigation links
+  App.jsx              - Main router, route setups, and application entry point
   TeacherDashboard.jsx - Teacher view
   StudentPortal.jsx    - Student view
   main.jsx             - React entry point
 
 
-UNIT TESTS AND VALIDATION
-=========================
-All services are fully covered by automated unit tests running on Vitest under the browser-like jsdom environment.
+UNIT & COMPONENT TESTS
+======================
+All services and routing components are fully covered by automated unit tests running on Vitest under the browser-like jsdom environment.
 
 1. StorageService Test Cases:
    - Saves and retrieves values with full serialization integrity.
@@ -184,13 +203,18 @@ All services are fully covered by automated unit tests running on Vitest under t
    - Returns fallback variables if key doesn't exist.
    - Modifies and overrides existing parameters or appends new metadata properties at runtime.
 
-No complex external HTTP or API mocks were needed, as the services operate cleanly in independent JS spaces, with jsdom fully simulating the local browser environment.
+5. NavigationMenu and Routing Test Cases:
+   - Navigation links: Renders TEACHER links (Teacher Dashboard, Services Sandbox) and suppresses STUDENT links when a teacher logs in.
+   - Navigation links: Renders STUDENT links (Student Portal, Services Sandbox) and suppresses TEACHER links when a student logs in.
+   - ProtectedRoute: Blocks access to restricted paths (/teacher) and redirects to index when a user with the wrong role attempts entry.
+   - ProtectedRoute: Seamlessly yields inner child components when the correct user role matches.
+   - Unauthenticated Redirects: Denies access to protected components entirely if no session is active.
 
 
 DEVELOPMENT RULES
 =================
 - All work is done on the dev branch, never directly on main
-- Feature branches are created from dev (e.g. feature/auth-login-register, feature/generic-services)
+- Feature branches are created from dev (e.g. feature/auth-login-register, feature/generic-services, feature/routing-navigation)
 - Every module or feature gets its own separate commit
 - Comments and notes are committed separately after each feature
 - The project follows modular development: services first, then teacher features, then student features
