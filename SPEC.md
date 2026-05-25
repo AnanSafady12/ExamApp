@@ -32,6 +32,13 @@ All routes are managed under `HashRouter` to prevent reload 404s on GitHub Pages
 - Custom `ProtectedRoute` intercepts navigation requests, routing unauthenticated traffic to `/login`, and mismatches to their corresponding home routes.
 - A dynamic `NavigationMenu` component renders responsive links matched to the active role (`TEACHER` or `STUDENT`) with user profile indicators and a logout redirect action.
 
+## Teacher Dashboard Workspace
+Refactored into a highly modular, decoupled structure:
+- `TeacherDashboard.jsx` — orchestrates active view state, manages loaders, and executes `NotificationService` callback notifications.
+- `ExamList.jsx` — grid layout component that takes list elements and maps them.
+- `ExamCard.jsx` — visual cards that represent unique assessment metadata (title, questions length, status badges) and button triggers for exam records lookups.
+- `ScoreTable.jsx` — details panel holding student grade grids with loaders, closing handlers, and empty state support.
+
 ## Architecture & Generic Services
 Modular, decoupled, and OOP-oriented structure:
 - `mockDb.js` — in-memory data store (users, exams, scores)
@@ -43,11 +50,15 @@ Modular, decoupled, and OOP-oriented structure:
 - `NotificationService.js` — OOP alerts listener and activities history tracker
 - `ConfigurationService.js` — OOP key-value configuration overrides engine
 
+### Reusability
+The services (`StorageService`, `LoggerService`, `NotificationService`, `ConfigurationService`) contain zero domain-specific references, allowing drop-in application inside any future client-side modules or other standalone web projects.
+
 ## Testing & Validation
 Unit and component tests execute in Vitest with a browser-like `jsdom` environment:
 - **Auth tests**: login success/fail, register success/duplicate/validation, logout, getCurrentUser, role checks
 - **Services tests**: Storage serialization/defaults/prefixes, Logger FIFO log buffer, Notification publishers/history/categories, Configuration runtime overrides
 - **Routing & Component tests**: dynamic Navigation menu rendering, teacher/student links assertion, ProtectedRoute boundary blocks, and redirection handling
+- **Teacher Dashboard tests**: loader triggers validation, mock exams binding verification, view grades API checks, and notification failures intercept testing
 
 ## Development Workflow
 - Feature branches created from `dev`

@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { getAllExams, getScoresByExam } from './api/examService';
+import ExamList from './components/ExamList';
+import ScoreTable from './components/ScoreTable';
+import notificationService from './services/NotificationService';
 
 function TeacherDashboard() {
   const [exams, setExams] = useState([]);
@@ -7,95 +10,58 @@ function TeacherDashboard() {
   const [selectedExamScores, setSelectedExamScores] = useState(null);
   const [scoresLoading, setScoresLoading] = useState(false);
 
-  // Fetch all exams on mount
   useEffect(() => {
     getAllExams()
-      .then((data) => setExams(data))
-      .finally(() => setLoading(false));
+      .then((data) => {
+        setExams(data);
+        notificationService.success('Exams retrieved successfully');
+      })
+      .catch((err) => {
+        notificationService.error(`Failed to load exams: ${err.message}`);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
-  // Show scores for a specific exam
   const handleViewScores = async (examId) => {
     setScoresLoading(true);
-    const scores = await getScoresByExam(examId);
-    setSelectedExamScores({ examId, scores });
-    setScoresLoading(false);
+    setSelectedExamScores({ examId, scores: [] });
+    try {
+      const scores = await getScoresByExam(examId);
+      setSelectedExamScores({ examId, scores });
+      notificationService.success(`Loaded scores for exam #${examId}`);
+    } catch (err) {
+      notificationService.error(`Failed to retrieve scores: ${err.message}`);
+    } finally {
+      setScoresLoading(false);
+    }
+  };
+
+  const handleCloseScores = () => {
+    setSelectedExamScores(null);
   };
 
   if (loading) {
     return (
-      <div className="text-center my-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-2">Loading exams…</p>
+      <div className="text-center my-5 py-5">
+        <div className="spinner-border text-primary" role="status" style={{ width: '3rem', height: '3rem' }} />
+        <p className="mt-3 text-muted">Retrieving exams list…</p>
       </div>
     );
   }
 
   return (
-    <div>
-      <h2 className="mb-4">📋 Teacher Dashboard</h2>
+    <div className="container p-0">
+      <h2 className="fw-bold text-dark mb-4">📋 Teacher Dashboard</h2>
 
-      {/* ── Exam list ─────────────────────────────────── */}
-      <div className="row">
-        {exams.map((exam) => (
-          <div className="col-md-4 mb-3" key={exam.id}>
-            <div className="card h-100 shadow-sm">
-              <div className="card-body d-flex flex-column">
-                <h5 className="card-title">{exam.title}</h5>
-                <p className="card-text text-muted">
-                  {exam.questions.length} question{exam.questions.length !== 1 && 's'}
-                </p>
-                <button
-                  className="btn btn-outline-primary mt-auto"
-                  onClick={() => handleViewScores(exam.id)}
-                >
-                  View Scores
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <ExamList exams={exams} onViewScores={handleViewScores} />
 
-      {/* ── Scores panel ──────────────────────────────── */}
-      {scoresLoading && (
-        <div className="text-center my-4">
-          <div className="spinner-border spinner-border-sm text-secondary" role="status" />
-          <span className="ms-2">Fetching scores…</span>
-        </div>
-      )}
-
-      {selectedExamScores && !scoresLoading && (
-        <div className="card mt-4 shadow-sm">
-          <div className="card-header bg-primary text-white">
-            Scores for Exam #{selectedExamScores.examId}
-          </div>
-          <div className="card-body">
-            {selectedExamScores.scores.length === 0 ? (
-              <p className="text-muted mb-0">No scores recorded yet.</p>
-            ) : (
-              <table className="table table-striped mb-0">
-                <thead>
-                  <tr>
-                    <th>Student</th>
-                    <th>Score</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedExamScores.scores.map((s, idx) => (
-                    <tr key={idx}>
-                      <td>{s.studentName}</td>
-                      <td>{s.score}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
+      <ScoreTable
+        selectedExamScores={selectedExamScores}
+        scoresLoading={scoresLoading}
+        onClose={handleCloseScores}
+      />
     </div>
   );
 }
