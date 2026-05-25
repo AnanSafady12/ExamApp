@@ -48,6 +48,158 @@ Refactored into a modular, component-driven architecture:
 - `ExamTakingView.jsx` — renders the active assessment view with list of questions, exit controls, validation block, and final results view.
 - `QuestionCard.jsx` — renders a single multiple-choice question with option interactions, active selections, and final correctness highlight states.
 
+## Diagrams & Flows
+
+### Components Hierarchy
+```mermaid
+graph TD
+    App[App.jsx] --> ProtectedRoute[ProtectedRoute.jsx]
+    App --> HomeRedirect[HomeRedirect.jsx]
+    App --> NavigationMenu[NavigationMenu.jsx]
+    App --> LoginPage[LoginPage.jsx]
+    App --> RegisterPage[RegisterPage.jsx]
+    App --> SandboxPage[SandboxPage.jsx]
+    
+    ProtectedRoute --> TeacherDashboard[TeacherDashboard.jsx]
+    ProtectedRoute --> StudentPortal[StudentPortal.jsx]
+    ProtectedRoute --> SandboxPage
+    
+    TeacherDashboard --> ExamList[ExamList.jsx]
+    TeacherDashboard --> ScoreTable[ScoreTable.jsx]
+    TeacherDashboard --> ExamForm[ExamForm.jsx]
+    TeacherDashboard --> DeleteExamModal[DeleteExamModal.jsx]
+    
+    ExamList --> ExamCard[ExamCard.jsx]
+    
+    StudentPortal --> StudentExamList[StudentExamList.jsx]
+    StudentPortal --> ExamTakingView[ExamTakingView.jsx]
+    
+    ExamTakingView --> QuestionCard[QuestionCard.jsx]
+```
+
+### UML for Services
+```mermaid
+classDiagram
+    class StorageService {
+        -string namespace
+        +set(key, value) void
+        +get(key, defaultValue) any
+        +remove(key) void
+        +clear() void
+    }
+
+    class AuthService {
+        -StorageService storage
+        +login(username, password) User
+        +register(userData) User
+        +logout() void
+        +getCurrentUser() User
+        +isLoggedIn() boolean
+        +getRole() string
+        +isTeacher() boolean
+        +isStudent() boolean
+    }
+
+    class LoggerService {
+        -array logs
+        -number maxLogs
+        +info(message) void
+        +success(message) void
+        +error(message) void
+        +warning(message) void
+        +getLogs() array
+        +clearLogs() void
+    }
+
+    class NotificationService {
+        -array history
+        -array listeners
+        +success(message) void
+        +error(message) void
+        +warning(message) void
+        +getHistory() array
+        +clearHistory() void
+        +subscribe(listener) function
+    }
+
+    class ConfigurationService {
+        -object config
+        +get(key, defaultValue) any
+        +set(key, value) void
+        +getAll() object
+    }
+
+    AuthService --> StorageService
+```
+
+### Mock DB Schema
+```mermaid
+erDiagram
+    USER {
+        int id PK
+        string username
+        string password
+        string fullName
+        string role "TEACHER | STUDENT"
+    }
+
+    EXAM {
+        int id PK
+        string title
+        string status "draft | published | closed"
+    }
+
+    QUESTION {
+        string id PK
+        string text
+        string[] options
+        string correctAnswer
+    }
+
+    SCORE {
+        int studentId FK
+        string studentName
+        int examId FK
+        string examTitle
+        int score "percentage"
+        string date
+    }
+
+    EXAM ||--|{ QUESTION : contains
+    USER ||--|{ SCORE : submits
+    EXAM ||--|{ SCORE : records
+```
+
+### Use Case Diagram
+```mermaid
+graph TD
+    Teacher[Teacher User]
+    Student[Student User]
+
+    subgraph Teacher Actions
+        Teacher --> UC1[Create Exam]
+        Teacher --> UC2[Edit Exam]
+        Teacher --> UC3[Delete Exam]
+        Teacher --> UC4[Change Exam Status]
+        Teacher --> UC5[View Exam Scores]
+    end
+
+    subgraph Student Actions
+        Student --> UC6[View Published Exams]
+        Student --> UC7[Start Exam]
+        Student --> UC8[Select Answers]
+        Student --> UC9[Submit Exam]
+        Student --> UC10[View Results Summary]
+    end
+
+    subgraph Shared Actions
+        Teacher --> UC11[Login / Register]
+        Student --> UC11
+        Teacher --> UC12[Services Sandbox Test Bench]
+        Student --> UC12
+    end
+```
+
 ## Architecture & Generic Services
 Modular, decoupled, and OOP-oriented structure:
 - `mockDb.js` — in-memory data store (users, exams, scores)
