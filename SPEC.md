@@ -34,10 +34,12 @@ All routes are managed under `HashRouter` to prevent reload 404s on GitHub Pages
 
 ## Teacher Dashboard Workspace
 Refactored into a highly modular, decoupled structure:
-- `TeacherDashboard.jsx` — orchestrates active view state, manages loaders, and executes `NotificationService` callback notifications.
-- `ExamList.jsx` — grid layout component that takes list elements and maps them.
-- `ExamCard.jsx` — visual cards that represent unique assessment metadata (title, questions length, status badges) and button triggers for exam records lookups.
+- `TeacherDashboard.jsx` — orchestrates active view state, manages loaders, and executes `NotificationService` callback notifications. Manages create, edit, and delete flows.
+- `ExamList.jsx` — grid layout component that takes list elements and maps them. Passes edit and delete callback handlers.
+- `ExamCard.jsx` — visual cards that represent unique assessment metadata (title, questions length, status badges), button triggers for exam records lookups, and action triggers for edit and delete flows.
 - `ScoreTable.jsx` — details panel holding student grade grids with loaders, closing handlers, and empty state support.
+- `ExamForm.jsx` — form component managing inputs for exam title and dynamic questions list with options and correct answers, including full client-side validations.
+- `DeleteExamModal.jsx` — deletion confirmation modal.
 
 ## Architecture & Generic Services
 Modular, decoupled, and OOP-oriented structure:
@@ -59,6 +61,7 @@ Unit and component tests execute in Vitest with a browser-like `jsdom` environme
 - **Services tests**: Storage serialization/defaults/prefixes, Logger FIFO log buffer, Notification publishers/history/categories, Configuration runtime overrides
 - **Routing & Component tests**: dynamic Navigation menu rendering, teacher/student links assertion, ProtectedRoute boundary blocks, and redirection handling
 - **Teacher Dashboard tests**: loader triggers validation, mock exams binding verification, view grades API checks, and notification failures intercept testing
+- **Exam CRUD tests**: create exam calls service with correct data, edit exam updates exam, delete exam removes exam, validation prevents empty title/question
 
 ## Development Workflow
 - Feature branches created from `dev`

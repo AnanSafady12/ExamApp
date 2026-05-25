@@ -1,6 +1,6 @@
 import ExamCard from './ExamCard';
 
-function ExamList({ exams, onViewScores }) {
+function ExamList({ exams, onViewScores, onEdit, onDelete }) {
   if (exams.length === 0) {
     return (
       <div className="text-center p-5 border rounded-4 bg-light">
@@ -14,7 +14,12 @@ function ExamList({ exams, onViewScores }) {
     <div className="row g-4">
       {exams.map((exam) => (
         <div className="col-md-4 col-sm-6" key={exam.id}>
-          <ExamCard exam={exam} onViewScores={onViewScores} />
+          <ExamCard
+            exam={exam}
+            onViewScores={onViewScores}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
         </div>
       ))}
     </div>
