@@ -43,8 +43,11 @@ The application utilizes React Router (HashRouter) to manage client-side routing
 
 4. Teacher Dashboard (/teacher) [PROTECTED]
    - Access limited to authenticated users with the TEACHER role.
-   - Displays all exams as cards with question counts.
-   - View Scores button triggers the exam score details sheet.
+   - Reusable components make it easy to inspect and manage data layouts:
+     * ExamList: Grid that iterates and renders individual ExamCards.
+     * ExamCard: Styled panel showing exam name, total question counts, and a status tag ('published' or 'draft'). Includes button to trigger scores lookup.
+     * ScoreTable: Data grid representing student grades for the active exam with loaded indicators and clear close actions.
+   - Real-time success and failure alert reports using NotificationService.
 
 5. Student Portal (/student) [PROTECTED]
    - Access limited to authenticated users with the STUDENT role.
@@ -88,6 +91,24 @@ AUTH FLOW
 4. User logs in or registers. The session is serialized into localStorage under the "examapp_current_user" key.
 5. React state is updated, rendering the NavigationMenu.
 6. The user is redirected to the home route (/), which resolves to /teacher or /student depending on their role.
+
+
+TEACHER DASHBOARD DATA FLOW
+===========================
+1. Mount Trigger:
+   - When hitting /teacher, TeacherDashboard component mounts.
+   - Triggering a call to examService.getAllExams() (simulating a network fetch delay).
+2. UI Card Binding:
+   - On successful fetch, the array is saved to the local `exams` state and passed down to ExamList.
+   - ExamList maps over the array and renders an ExamCard for each.
+   - NotificationService logs a success trigger, visible under Services Sandbox logs.
+3. Scores Retrieval:
+   - Clicking "View Scores" on a card calls getScoresByExam(examId) with the selected id.
+   - ScoreTable shows a loader spinner.
+   - On response, state is updated with the student grades array, and the loader switches to a standard table display.
+   - NotificationService tracks successful retrievals and prints them to sandbox logs.
+4. Exception Handling:
+   - If any API promise fails (e.g., mockDB network error), a catch handler triggers NotificationService.error() which renders visual toast blocks and schedules log outputs.
 
 
 GENERIC SUPPORTING SERVICES
@@ -168,12 +189,16 @@ client/src/
     NavigationMenu.jsx - Global navbar component
     ProtectedRoute.jsx - Client routing authentication blocker
     HomeRedirect.jsx   - Role-based redirect router controller
+    ExamCard.jsx       - Individual exam component view
+    ExamList.jsx       - Grid representation component for exams
+    ScoreTable.jsx     - Grade table layout component
   __tests__/
     AuthService.test.js - Vitest tests for auth logic
     GenericServices.test.js - Vitest tests for generic storage, logs, notifs, configs services
     NavigationAndRouting.test.jsx - Vitest rendering tests for ProtectedRoute and Navigation links
+    TeacherDashboard.test.jsx - Vitest unit tests verifying exam card loads and scores table triggers
   App.jsx              - Main router, route setups, and application entry point
-  TeacherDashboard.jsx - Teacher view
+  TeacherDashboard.jsx - Teacher view controller mapping data to components
   StudentPortal.jsx    - Student view
   main.jsx             - React entry point
 
@@ -210,11 +235,17 @@ All services and routing components are fully covered by automated unit tests ru
    - ProtectedRoute: Seamlessly yields inner child components when the correct user role matches.
    - Unauthenticated Redirects: Denies access to protected components entirely if no session is active.
 
+6. TeacherDashboard Test Cases:
+   - Loading Screen: Confirms loading spinner appears while fetching list elements from mock API.
+   - Exams Binding: Verifies exam card bindings (titles, question size, status) resolve on successful response.
+   - Click Scores: Confirms click events trigger data calls and accurately map scores to clean tables.
+   - Error handling: Confirms API exception triggers result in correct NotificationService.error calls.
+
 
 DEVELOPMENT RULES
 =================
 - All work is done on the dev branch, never directly on main
-- Feature branches are created from dev (e.g. feature/auth-login-register, feature/generic-services, feature/routing-navigation)
+- Feature branches are created from dev (e.g. feature/auth-login-register, feature/generic-services, feature/routing-navigation, feature/teacher-dashboard)
 - Every module or feature gets its own separate commit
 - Comments and notes are committed separately after each feature
 - The project follows modular development: services first, then teacher features, then student features
