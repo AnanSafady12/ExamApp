@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
-function LoginPage({ onLogin, onSwitchToRegister }) {
+function LoginPage({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -79,12 +80,12 @@ function LoginPage({ onLogin, onSwitchToRegister }) {
 
               <div className="text-center mt-4">
                 <span className="text-muted">Don't have an account? </span>
-                <button
-                  className="btn btn-link p-0 fw-semibold"
-                  onClick={onSwitchToRegister}
+                <Link
+                  className="fw-semibold text-decoration-none"
+                  to="/register"
                 >
                   Register
-                </button>
+                </Link>
               </div>
 
               <div className="mt-4 p-3 rounded-3" style={{ backgroundColor: '#f8f9fa' }}>

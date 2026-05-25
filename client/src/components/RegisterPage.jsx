@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ROLES } from '../api/userService';
 
-function RegisterPage({ onRegister, onSwitchToLogin }) {
+function RegisterPage({ onRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -109,12 +110,12 @@ function RegisterPage({ onRegister, onSwitchToLogin }) {
 
               <div className="text-center mt-4">
                 <span className="text-muted">Already have an account? </span>
-                <button
-                  className="btn btn-link p-0 fw-semibold"
-                  onClick={onSwitchToLogin}
+                <Link
+                  className="fw-semibold text-decoration-none"
+                  to="/login"
                 >
                   Sign In
-                </button>
+                </Link>
               </div>
             </div>
           </div>
