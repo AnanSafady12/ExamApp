@@ -200,9 +200,25 @@ STUDENT PORTAL MODULAR FLOW
    - ExamTakingView maps over the exam questions, rendering a QuestionCard for each question.
    - Each QuestionCard displays the question text and options. Clicking an option calls onSelectAnswer to save the selected answer in StudentPortal state.
 
-3. Submission Validation:
+3. Submission and Score Saving:
    - The "Submit Assessment" button is disabled until the student has answered every question in the exam.
-   - Clicking "Submit Assessment" verifies the latest status of the exam. If published, it locks the answers, grades the exam, and shows the score and correct/incorrect answers inside QuestionCard.
+   - Clicking "Submit Assessment" verifies the latest status of the exam via getExamById(examId).
+   - If the exam is still published:
+     * Calculates the score percentage: (correct answers / total questions) * 100.
+     * Fetches current authenticated student info via authService.getCurrentUser().
+     * Stores a new score record in the mock database by invoking examService.saveScore(scoreRecord), containing:
+       - studentId (number or null)
+       - studentName (string)
+       - examId (number)
+       - examTitle (string)
+       - score (percentage number)
+       - date (formatted date string)
+     * Sets the active view state to submitted, which locks the answers, displays a summary of the score percentage, and triggers visual highlights on correct and incorrect options in QuestionCard.
+     * Dispatches success notifications and logs the action under LoggerService.
+
+4. Teacher View of Scores:
+   - Because the submitted score is stored in the mock database's in-memory `studentScores` array, the teacher can instantly see this new score.
+   - Clicking "View Scores" on any exam card inside the Teacher Dashboard fetches the latest scores via examService.getScoresByExam(examId) and displays the score details.
 
 
 GENERIC SUPPORTING SERVICES

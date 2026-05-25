@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { getAllExams, getExamById } from './api/examService';
+import { getAllExams, getExamById, saveScore } from './api/examService';
 import StudentExamList from './components/StudentExamList';
 import ExamTakingView from './components/ExamTakingView';
 import notificationService from './services/NotificationService';
 import loggerService from './services/LoggerService';
+import authService from './services/AuthService';
 
 function StudentPortal() {
   const [exams, setExams] = useState([]);
@@ -52,9 +53,32 @@ function StudentPortal() {
         loggerService.error(`Failed submission attempt for closed exam ID ${exam.id}`);
         return;
       }
+      const currentUser = authService.getCurrentUser();
+      const studentName = currentUser ? currentUser.fullName : 'Anonymous';
+      const studentId = currentUser ? currentUser.id : null;
+      const score = exam.questions.reduce(
+        (acc, q) => acc + (answers[q.id] === q.correctAnswer ? 1 : 0),
+        0
+      );
+      const scorePercentage = exam.questions.length
+        ? Math.round((score / exam.questions.length) * 100)
+        : 0;
+      const date = new Date().toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      });
+      await saveScore({
+        studentId,
+        studentName,
+        examId: Number(exam.id),
+        examTitle: exam.title,
+        score: scorePercentage,
+        date,
+      });
       setSubmitted(true);
       notificationService.success(`Exam "${exam.title}" submitted successfully.`);
-      loggerService.success(`Student submitted exam ID ${exam.id}`);
+      loggerService.success(`Student ${studentName} submitted exam ID ${exam.id} with score ${scorePercentage}%`);
     } catch (err) {
       setError('An error occurred during submission.');
     } finally {
