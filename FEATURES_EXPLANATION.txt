@@ -1,0 +1,58 @@
+PROJECT GOAL
+============
+ExamApp is an online examination system built with React.
+Teachers create and manage exams, students take exams and receive instant grading.
+The project uses a mock API layer to simulate a backend server, making it ready for future migration to a real Node.js backend.
+
+
+USERS
+=====
+1. Teacher
+   - Creates, edits, and deletes exams
+   - Views student scores per exam
+   - Controls exam status (draft, published, closed)
+
+2. Student
+   - Browses available exams
+   - Takes multiple-choice exams
+   - Receives instant score and answer review after submission
+
+
+PAGES
+=====
+1. Login Page
+   - Username and password fields
+   - Shared entry point for both teachers and students
+
+2. Teacher Dashboard
+   - Displays all exams as cards
+   - Shows question count per exam
+   - View Scores button opens a scores table for each exam
+
+3. Student Portal
+   - Search by Exam ID to load an exam
+   - Multiple-choice question interface with option selection
+   - Submit button (enabled only when all questions answered)
+   - Results screen with correct/incorrect highlights and percentage score
+
+
+MOCK DB AND API
+===============
+The app uses an in-memory mock database (mockDb.js) containing:
+- exams: array of exam objects, each with id, title, and questions array
+- studentScores: array of score records with studentName, examId, and score
+
+The exam service (examService.js) wraps this data with async functions that simulate 600ms network delay:
+- getAllExams, getExamById, createExam, updateExam, deleteExam
+- getAllScores, getScoresByExam
+
+This layer is designed so that when a real backend is built, only the service imports need to change.
+
+
+DEVELOPMENT RULES
+=================
+- All work is done on the dev branch, never directly on main
+- Feature branches are created from dev (e.g. feature/login, feature/exam-crud)
+- Every module or feature gets its own separate commit
+- Comments and notes are committed separately after each feature
+- The project follows modular development: services first, then teacher features, then student features
