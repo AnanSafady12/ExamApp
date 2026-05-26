@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import './App.css';
 import authService, { ROLES } from './services/AuthService';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
