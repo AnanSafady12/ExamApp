@@ -1,11 +1,13 @@
 import loggerService from './LoggerService';
 
+// NotificationService sends real-time alerts and records their history
 class NotificationService {
   constructor() {
     this.listeners = [];
     this.history = [];
   }
 
+  // Generates alert object, logs it to LoggerService, and notifies subscribers
   _notify(type, message) {
     const notification = {
       id: Math.random().toString(36).substring(2, 9),
@@ -28,26 +30,32 @@ class NotificationService {
     return notification;
   }
 
+  // Trigger a success notification
   success(message) {
     return this._notify('SUCCESS', message);
   }
 
+  // Trigger an error notification
   error(message) {
     return this._notify('ERROR', message);
   }
 
+  // Trigger a warning notification
   warning(message) {
     return this._notify('WARNING', message);
   }
 
+  // Get list of all notifications triggered
   getHistory() {
     return [...this.history];
   }
 
+  // Wipe the notifications history
   clearHistory() {
     this.history = [];
   }
 
+  // Subscribe to receive real-time notifications when they are triggered
   subscribe(listener) {
     this.listeners.push(listener);
     return () => {

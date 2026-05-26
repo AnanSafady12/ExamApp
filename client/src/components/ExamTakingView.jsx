@@ -1,5 +1,6 @@
 import QuestionCard from './QuestionCard';
 
+// Renders the active test-taking UI panel for a student taking a published exam
 function ExamTakingView({
   exam,
   answers,
@@ -10,11 +11,13 @@ function ExamTakingView({
   onSubmit,
   onExit,
 }) {
+  // Count the number of correct choices selected
   const score = exam.questions.reduce(
     (acc, q) => acc + (answers[q.id] === q.correctAnswer ? 1 : 0),
     0
   );
 
+  // Calculates the final score percentage
   const scorePercentage = exam.questions.length
     ? Math.round((score / exam.questions.length) * 100)
     : 0;
@@ -28,6 +31,8 @@ function ExamTakingView({
   return (
     <div className="exam-view animate-in">
       <div className="card exam-card shadow-lg mb-5">
+        
+        {/* Header segment showing exam details and dynamic grades summary */}
         <div className="card-header bg-white border-bottom py-4 px-4 d-flex justify-content-between align-items-center">
           <div>
             <span className="badge bg-primary-subtle text-primary rounded-pill mb-2 px-3 py-2">
@@ -50,6 +55,8 @@ function ExamTakingView({
         <div className="card-body bg-light py-4 px-4">
           <div className="row justify-content-center">
             <div className="col-lg-10">
+              
+              {/* Map and render each question dynamically as a QuestionCard component */}
               {exam.questions.map((q, idx) => (
                 <QuestionCard
                   key={q.id}
@@ -61,14 +68,18 @@ function ExamTakingView({
                 />
               ))}
 
+              {/* Renders the submission controls if not yet completed */}
               {!submitted ? (
                 <div className="d-grid gap-2 mt-5">
+                  {/* Displays validation errors if double checks fail */}
                   {error && (
                     <div className="alert alert-danger rounded-4 py-2 mb-3 animate-in" role="alert">
                       <span className="me-2">⚠️</span>
                       {error}
                     </div>
                   )}
+                  
+                  {/* Submit button stays disabled until all questions are answered */}
                   <button
                     className="btn btn-primary btn-lg rounded-pill py-3 fw-bold shadow"
                     onClick={onSubmit}
@@ -91,6 +102,7 @@ function ExamTakingView({
                   )}
                 </div>
               ) : (
+                /* Renders the final grades percentage summaries and correct highlights */
                 <div className="score-display shadow-lg animate-in">
                   <h2 className="fw-bold mb-2">Assessment Completed!</h2>
                   <p className="mb-4 opacity-75">Great job completing the {exam.title} exam.</p>

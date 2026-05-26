@@ -5,6 +5,7 @@ import notificationService from '../services/NotificationService';
 import loggerService from '../services/LoggerService';
 import configurationService from '../services/ConfigurationService';
 
+// Renders the Services Sandbox test panel page
 function SandboxPage() {
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
   const [lastLogin, setLastLogin] = useState(storageService.get('last_login_time', 'Never'));
@@ -22,11 +23,13 @@ function SandboxPage() {
   const [configKey, setConfigKey] = useState('');
   const [configVal, setConfigVal] = useState('');
 
+  // Initial load of logs history and configuration fields on mount
   useEffect(() => {
     setNotifHistory(notificationService.getHistory());
     setLoggerLogs(loggerService.getLogs().slice(-10).reverse());
     setConfigData(configurationService.getAll());
 
+    // Subscriber listener to update logs lists when alerts trigger
     const unsubscribe = notificationService.subscribe(() => {
       setNotifHistory(notificationService.getHistory());
       setLoggerLogs(loggerService.getLogs().slice(-10).reverse());
@@ -36,6 +39,7 @@ function SandboxPage() {
     return () => unsubscribe();
   }, []);
 
+  // Quick action helper to login as teacher
   const handleLoginAsLecturer = async () => {
     try {
       const user = await authService.login('teacher1', 'pass123');
@@ -50,6 +54,7 @@ function SandboxPage() {
     }
   };
 
+  // Quick action helper to login as student
   const handleLoginAsStudent = async () => {
     try {
       const user = await authService.login('student1', 'pass123');
@@ -64,6 +69,7 @@ function SandboxPage() {
     }
   };
 
+  // Logout helper to wipe sessions and reload routes
   const handleQuickLogout = () => {
     authService.logout();
     setCurrentUser(null);
@@ -71,50 +77,59 @@ function SandboxPage() {
     window.location.reload();
   };
 
+  // Saves test values into prefixnamespaced StorageService keys
   const handleStorageSet = () => {
     if (!storageKey) return;
     storageService.set(storageKey, storageVal);
     setStorageResult(`Set ${storageKey} to "${storageVal}"`);
   };
 
+  // Loads test values from prefixnamespaced keys with default fallbacks
   const handleStorageGet = () => {
     if (!storageKey) return;
     const val = storageService.get(storageKey, 'KEY_NOT_FOUND_DEFAULT');
     setStorageResult(`Value: ${JSON.stringify(val)}`);
   };
 
+  // Slices specific storage keys
   const handleStorageRemove = () => {
     if (!storageKey) return;
     storageService.remove(storageKey);
     setStorageResult(`Removed key: ${storageKey}`);
   };
 
+  // Clears namespaced keys entirely
   const handleStorageClear = () => {
     storageService.clear();
     setStorageResult('Cleared storage');
   };
 
+  // Trigger test success alerts
   const triggerSuccess = () => {
     notificationService.success(notifMessage || 'This is a test success message!');
     setNotifMessage('');
   };
 
+  // Trigger test error alerts
   const triggerError = () => {
     notificationService.error(notifMessage || 'This is a test error message!');
     setNotifMessage('');
   };
 
+  // Trigger test warning alerts
   const triggerWarning = () => {
     notificationService.warning(notifMessage || 'This is a test warning message!');
     setNotifMessage('');
   };
 
+  // Log a background info trace to the logs stream without toast overlays
   const triggerInfoLog = () => {
     loggerService.info(notifMessage || 'Default Info Log');
     setLoggerLogs(loggerService.getLogs().slice(-10).reverse());
     setNotifMessage('');
   };
 
+  // Update configuration parameters dynamically
   const handleConfigSet = () => {
     if (!configKey) return;
     configurationService.set(configKey, configVal);
@@ -127,6 +142,7 @@ function SandboxPage() {
     <div className="card shadow-sm p-4 mt-3" style={{ borderRadius: '16px', border: 'none' }}>
       <h2 className="fw-bold mb-4">🛠️ Services Sandbox Test</h2>
       
+      {/* Quick authentication test panel */}
       <div className="p-3 bg-light rounded-4 mb-4 border text-center">
         <h4 className="fw-bold mb-2">🔐 Quick Authentication Check</h4>
         <p className="mb-1 text-muted">
@@ -143,6 +159,7 @@ function SandboxPage() {
       </div>
 
       <div className="row g-4">
+        {/* StorageService operations workbench */}
         <div className="col-md-6">
           <div className="p-3 bg-light rounded-4 h-100 border">
             <h4 className="fw-bold mb-3">💾 StorageService Test</h4>
@@ -178,6 +195,7 @@ function SandboxPage() {
           </div>
         </div>
 
+        {/* NotificationService alerts trigger test bench */}
         <div className="col-md-6">
           <div className="p-3 bg-light rounded-4 h-100 border">
             <h4 className="fw-bold mb-3">🔔 NotificationService Test</h4>
@@ -200,6 +218,7 @@ function SandboxPage() {
           </div>
         </div>
 
+        {/* Active notifications broadcast history display */}
         <div className="col-md-6">
           <div className="p-3 bg-light rounded-4 h-100 border">
             <h4 className="fw-bold mb-3">📋 Local Activity Log (Notifications)</h4>
@@ -227,6 +246,7 @@ function SandboxPage() {
           </div>
         </div>
 
+        {/* LoggerService logs terminal listing */}
         <div className="col-md-6">
           <div className="p-3 bg-light rounded-4 h-100 border">
             <h4 className="fw-bold mb-3">🪵 LoggerService Logs (Last 10 Logs)</h4>
@@ -252,6 +272,7 @@ function SandboxPage() {
           </div>
         </div>
 
+        {/* ConfigurationService static parameters grid */}
         <div className="col-12">
           <div className="p-3 bg-light rounded-4 border">
             <h4 className="fw-bold mb-3">⚙️ ConfigurationService Values</h4>

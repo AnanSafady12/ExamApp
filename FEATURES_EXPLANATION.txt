@@ -368,3 +368,20 @@ DEVELOPMENT RULES
 - Every module or feature gets its own separate commit
 - Comments and notes are committed separately after each feature
 - The project follows modular development: services first, then teacher features, then student features
+
+
+DEVELOPER SUMMARY & PERSONAL DEVELOPMENT NOTES
+==============================================
+This section contains a personal technical review of the architectural decisions made in the ExamApp system.
+
+- Modular Design:
+  Breaking down main portal views (StudentPortal and TeacherDashboard) into modular, single-responsibility sub-components (such as StudentExamList, QuestionCard, ExamForm, and ExamTakingView) significantly improves codebase readability, makes automated component testing straightforward, and avoids duplication.
+
+- Generic Support Services:
+  Domain-agnostic services (StorageService, LoggerService, and NotificationService) are written using clean OOP principles with zero references to ExamApp logic. This makes them fully reusable and easily pluggable into future projects.
+
+- Exam Status Management Flow:
+  Exam states (draft, published, closed) are strictly validated. Double-checks occur at both initial loading and submission points to prevent students from submitting answers to closed exams, or exams updated mid-test by the instructor.
+
+- Comprehensive Testing (Vitest):
+  All key logical flows (authentication, exam creation, dynamic question manipulation, status transitions, assessment submissions, and generic supporting logs/services) are fully covered by fast and robust JSDOM unit tests.

@@ -1,4 +1,6 @@
+// Renders a warning confirmation card to prevent accidental exam deletions on the Teacher Dashboard
 function DeleteExamModal({ exam, onConfirm, onCancel }) {
+  // If no exam is queued for deletion, render nothing
   if (!exam) return null;
 
   return (
@@ -9,6 +11,8 @@ function DeleteExamModal({ exam, onConfirm, onCancel }) {
           Are you sure you want to delete <strong>"{exam.title}"</strong>?
           This action cannot be undone.
         </p>
+
+        {/* Action triggers to confirm or cancel the permanent deletion */}
         <div className="d-flex gap-3">
           <button
             className="btn btn-danger flex-grow-1 py-2 fw-semibold"

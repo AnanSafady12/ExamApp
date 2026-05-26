@@ -1,6 +1,8 @@
+// Renders a single multiple-choice question card with active selection indicators and final feedback grading highlights
 function QuestionCard({ question, idx, answers, submitted, onSelectAnswer }) {
   return (
     <div className="question-box shadow-sm">
+      {/* Renders the question index number and question text */}
       <div className="d-flex mb-3">
         <span
           className="badge bg-dark rounded-circle me-3 d-flex align-items-center justify-content-center"
@@ -11,9 +13,12 @@ function QuestionCard({ question, idx, answers, submitted, onSelectAnswer }) {
         <h5 className="fw-bold mb-0 pt-1">{question.text}</h5>
       </div>
 
+      {/* Renders the list of multiple choice options */}
       <div className="options-list mt-4">
         {question.options.map((opt) => {
           let btnClass = 'option-btn btn btn-outline-secondary';
+          
+          // Determine the CSS styling of the option buttons depending on state (active, correct, incorrect)
           if (submitted) {
             if (opt === question.correctAnswer) {
               btnClass = 'option-btn btn btn-success';
@@ -35,6 +40,8 @@ function QuestionCard({ question, idx, answers, submitted, onSelectAnswer }) {
             >
               <div className="d-flex justify-content-between align-items-center w-100">
                 <span>{opt}</span>
+                
+                {/* Checkmark icon for currently selected answers before submitting */}
                 {!submitted && answers[question.id] === opt && (
                   <span className="badge bg-white text-primary rounded-circle p-1">
                     <svg
@@ -48,9 +55,13 @@ function QuestionCard({ question, idx, answers, submitted, onSelectAnswer }) {
                     </svg>
                   </span>
                 )}
+                
+                {/* Visual success badge for correct answer highlights */}
                 {submitted && opt === question.correctAnswer && (
                   <span className="badge bg-white text-success rounded-circle p-1">✓</span>
                 )}
+                
+                {/* Visual error badge for selected incorrect answer highlights */}
                 {submitted && answers[question.id] === opt && opt !== question.correctAnswer && (
                   <span className="badge bg-white text-danger rounded-circle p-1">✕</span>
                 )}

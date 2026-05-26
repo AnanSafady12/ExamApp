@@ -7,6 +7,7 @@ import DeleteExamModal from './components/DeleteExamModal';
 import notificationService from './services/NotificationService';
 import loggerService from './services/LoggerService';
 
+// Renders the workspace for teachers to manage exams and view scores
 function TeacherDashboard() {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,7 @@ function TeacherDashboard() {
   const [editingExam, setEditingExam] = useState(null);
   const [deletingExam, setDeletingExam] = useState(null);
 
+  // Fetch all exams from the mock API and update state
   const fetchExams = async () => {
     try {
       const data = await getAllExams();
@@ -27,6 +29,7 @@ function TeacherDashboard() {
     }
   };
 
+  // Pull exams list on dashboard mount
   useEffect(() => {
     fetchExams()
       .then(() => {
@@ -37,6 +40,7 @@ function TeacherDashboard() {
       });
   }, []);
 
+  // Fetch student score records for the selected exam
   const handleViewScores = async (examId) => {
     setScoresLoading(true);
     setSelectedExamScores({ examId, scores: [] });
@@ -51,27 +55,32 @@ function TeacherDashboard() {
     }
   };
 
+  // Clear student scores detailed overlay
   const handleCloseScores = () => {
     setSelectedExamScores(null);
   };
 
+  // Switch UI to show create form
   const handleCreateClick = () => {
     setEditingExam(null);
     setShowForm(true);
     loggerService.info('Opened create exam form');
   };
 
+  // Switch UI to show edit form with targeted values prefilled
   const handleEditClick = (exam) => {
     setEditingExam(exam);
     setShowForm(true);
     loggerService.info(`Opened edit form for exam: ${exam.title}`);
   };
 
+  // Open safe delete confirmation modal for chosen exam
   const handleDeleteClick = (exam) => {
     setDeletingExam(exam);
     loggerService.info(`Opened delete confirmation for exam: ${exam.title}`);
   };
 
+  // Handles adding new exams or updating edited ones upon form submission
   const handleFormSubmit = async (payload) => {
     try {
       if (editingExam) {
@@ -92,11 +101,13 @@ function TeacherDashboard() {
     }
   };
 
+  // Cancel form edit and return to main grid
   const handleFormCancel = () => {
     setShowForm(false);
     setEditingExam(null);
   };
 
+  // Update draft, published, or closed status of an exam card
   const handleStatusChange = async (examId, newStatus) => {
     try {
       await updateExam(examId, { status: newStatus });
@@ -109,6 +120,7 @@ function TeacherDashboard() {
     }
   };
 
+  // Call mock DB service to permanently remove an exam
   const handleDeleteConfirm = async (examId) => {
     try {
       await deleteExam(examId);
@@ -122,10 +134,12 @@ function TeacherDashboard() {
     }
   };
 
+  // Close deletion confirmation overlay modal
   const handleDeleteCancel = () => {
     setDeletingExam(null);
   };
 
+  // Show standard loading screen when loading list entries
   if (loading) {
     return (
       <div className="text-center my-5 py-5">
@@ -150,6 +164,7 @@ function TeacherDashboard() {
         )}
       </div>
 
+      {/* Render creation and editing form element overlay */}
       {showForm && (
         <ExamForm
           exam={editingExam}
@@ -158,6 +173,7 @@ function TeacherDashboard() {
         />
       )}
 
+      {/* Render deletion warning confirmation popups */}
       {deletingExam && (
         <DeleteExamModal
           exam={deletingExam}
@@ -166,6 +182,7 @@ function TeacherDashboard() {
         />
       )}
 
+      {/* Grid displaying the list of all exam cards */}
       <ExamList
         exams={exams}
         onViewScores={handleViewScores}
@@ -174,6 +191,7 @@ function TeacherDashboard() {
         onStatusChange={handleStatusChange}
       />
 
+      {/* Table grid listing student test results summary */}
       <ScoreTable
         selectedExamScores={selectedExamScores}
         scoresLoading={scoresLoading}
