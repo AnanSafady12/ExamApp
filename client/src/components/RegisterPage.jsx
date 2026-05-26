@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROLES } from '../api/userService';
 
+// Renders the registration form for new student and teacher accounts
 function RegisterPage({ onRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -10,6 +11,7 @@ function RegisterPage({ onRegister }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Form submit handler that triggers the registration service call
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -35,6 +37,7 @@ function RegisterPage({ onRegister }) {
                 <p className="text-muted">Register for E-Test</p>
               </div>
 
+              {/* Registration Form */}
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="register-fullname" className="form-label fw-semibold">Full Name</label>
@@ -75,6 +78,7 @@ function RegisterPage({ onRegister }) {
                   />
                 </div>
 
+                {/* Dropdown selector to choose account role (Student/Teacher) */}
                 <div className="mb-4">
                   <label htmlFor="register-role" className="form-label fw-semibold">Role</label>
                   <select
@@ -102,12 +106,14 @@ function RegisterPage({ onRegister }) {
                 </button>
               </form>
 
+              {/* Show error messages if registration fails */}
               {error && (
                 <div className="alert alert-danger mt-3 mb-0 text-center" style={{ borderRadius: '12px' }}>
                   {error}
                 </div>
               )}
 
+              {/* Direct Link element to navigate back to the Login page */}
               <div className="text-center mt-4">
                 <span className="text-muted">Already have an account? </span>
                 <Link

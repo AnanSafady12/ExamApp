@@ -6,6 +6,7 @@ import notificationService from './services/NotificationService';
 import loggerService from './services/LoggerService';
 import authService from './services/AuthService';
 
+// Renders the workspace for students to view active assessments and take tests
 function StudentPortal() {
   const [exams, setExams] = useState([]);
   const [exam, setExam] = useState(null);
@@ -14,6 +15,7 @@ function StudentPortal() {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
 
+  // Fetch only the published exams to prevent students seeing draft/closed ones
   const fetchPublishedExams = async () => {
     setLoading(true);
     setError('');
@@ -28,10 +30,12 @@ function StudentPortal() {
     }
   };
 
+  // Fetch active published exams when the student portal loads
   useEffect(() => {
     fetchPublishedExams();
   }, []);
 
+  // Sets up local workspace states to start taking a selected test
   const handleStartExam = (selectedExam) => {
     setExam(selectedExam);
     setAnswers({});
@@ -39,13 +43,16 @@ function StudentPortal() {
     setError('');
   };
 
+  // Tracks student's selected choice for a specific question
   const handleSelectAnswer = (questionId, option) => {
     setAnswers((prev) => ({ ...prev, [questionId]: option }));
   };
 
+  // Submits the test answers, calculates scores, and pushes records to mock DB
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      // Re-fetch the exam status from mock DB to ensure the teacher didn't close it mid-test
       const latest = await getExamById(exam.id);
       if (!latest || latest.status !== 'published') {
         setError('This exam is closed and can no longer be submitted.');
@@ -53,21 +60,28 @@ function StudentPortal() {
         loggerService.error(`Failed submission attempt for closed exam ID ${exam.id}`);
         return;
       }
+      
       const currentUser = authService.getCurrentUser();
       const studentName = currentUser ? currentUser.fullName : 'Anonymous';
       const studentId = currentUser ? currentUser.id : null;
+      
+      // Calculate correct vs incorrect answers
       const score = exam.questions.reduce(
         (acc, q) => acc + (answers[q.id] === q.correctAnswer ? 1 : 0),
         0
       );
+      
       const scorePercentage = exam.questions.length
         ? Math.round((score / exam.questions.length) * 100)
         : 0;
+      
       const date = new Date().toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
       });
+      
+      // Persist the score record in the mock database
       await saveScore({
         studentId,
         studentName,
@@ -76,6 +90,7 @@ function StudentPortal() {
         score: scorePercentage,
         date,
       });
+      
       setSubmitted(true);
       notificationService.success(`Exam "${exam.title}" submitted successfully.`);
       loggerService.success(`Student ${studentName} submitted exam ID ${exam.id} with score ${scorePercentage}%`);
@@ -86,6 +101,7 @@ function StudentPortal() {
     }
   };
 
+  // Reset exam state variables and reload active published test lists
   const handleExitExam = () => {
     setExam(null);
     setAnswers({});
@@ -157,6 +173,7 @@ function StudentPortal() {
         }
       `}</style>
 
+      {/* Header section with page title and exit button */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 className="fw-bold mb-1">🎓 Student Portal</h2>
@@ -169,6 +186,7 @@ function StudentPortal() {
         )}
       </div>
 
+      {/* Show loader spinner when loading lists of available exams */}
       {loading && !exam && (
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status">
@@ -177,10 +195,12 @@ function StudentPortal() {
         </div>
       )}
 
+      {/* Render list of active exams when no exam is actively running */}
       {!loading && !exam && (
         <StudentExamList exams={exams} onStartExam={handleStartExam} />
       )}
 
+      {/* Render test taking interface when a student has opened an exam */}
       {exam && (
         <ExamTakingView
           exam={exam}

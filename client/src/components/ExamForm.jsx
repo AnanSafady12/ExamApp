@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 
+// Generates an empty question structure with unique random IDs
 const EMPTY_QUESTION = () => ({
   id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
   text: '',
@@ -7,6 +8,7 @@ const EMPTY_QUESTION = () => ({
   correctAnswer: '',
 });
 
+// Form component that manages inputs to create new exams or edit existing ones
 function ExamForm({ exam, onSubmit, onCancel }) {
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState([EMPTY_QUESTION()]);
@@ -14,6 +16,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
 
   const isEditing = Boolean(exam);
 
+  // Load exam title and existing questions if mounting in editing mode
   useEffect(() => {
     if (exam) {
       setTitle(exam.title);
@@ -28,6 +31,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
     }
   }, [exam]);
 
+  // Performs validation on form fields before submitting
   const validate = () => {
     const newErrors = {};
 
@@ -57,6 +61,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Form submit handler that triggers the save/update API
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -72,6 +77,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
     });
   };
 
+  // Updates the text or correct answer fields of a specific question index
   const updateQuestion = (index, field, value) => {
     setQuestions((prev) => {
       const updated = [...prev];
@@ -80,6 +86,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
     });
   };
 
+  // Updates specific choice options of a chosen question index
   const updateOption = (qIndex, oIndex, value) => {
     setQuestions((prev) => {
       const updated = [...prev];
@@ -90,10 +97,12 @@ function ExamForm({ exam, onSubmit, onCancel }) {
     });
   };
 
+  // Appends a new blank question section to the form
   const addQuestion = () => {
     setQuestions((prev) => [...prev, EMPTY_QUESTION()]);
   };
 
+  // Slices/removes a targeted question index section from the form list
   const removeQuestion = (index) => {
     setQuestions((prev) => prev.filter((_, i) => i !== index));
   };
@@ -104,6 +113,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
         <h4 className="fw-bold mb-4">{isEditing ? '✏️ Edit Exam' : '➕ Create New Exam'}</h4>
 
         <form onSubmit={handleSubmit}>
+          {/* Title Input field */}
           <div className="mb-4">
             <label htmlFor="exam-title" className="form-label fw-semibold">
               Exam Title
@@ -120,12 +130,14 @@ function ExamForm({ exam, onSubmit, onCancel }) {
             {errors.title && <div className="invalid-feedback">{errors.title}</div>}
           </div>
 
+          {/* Validation warnings alerts */}
           {errors.questions && (
             <div className="alert alert-danger" style={{ borderRadius: '10px' }}>
               {errors.questions}
             </div>
           )}
 
+          {/* Dynamically renders sections for each question in the form */}
           {questions.map((q, qIndex) => (
             <div
               key={q.id}
@@ -146,6 +158,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
                 )}
               </div>
 
+              {/* Question Text Input */}
               <div className="mb-3">
                 <input
                   type="text"
@@ -160,6 +173,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
                 )}
               </div>
 
+              {/* Grid holding the 4 multiple-choice options inputs */}
               <div className="row g-2 mb-3">
                 {q.options.map((opt, oIndex) => (
                   <div className="col-md-6" key={oIndex}>
@@ -180,6 +194,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
                 ))}
               </div>
 
+              {/* Select menu to specify the correct choice out of options */}
               <div>
                 <label className="form-label fw-semibold small">Correct Answer</label>
                 <select
@@ -205,6 +220,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
             </div>
           ))}
 
+          {/* Button to dynamically append new questions fields */}
           <button
             type="button"
             className="btn btn-outline-secondary w-100 mb-4 py-2 fw-semibold"
@@ -214,6 +230,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
             + Add Question
           </button>
 
+          {/* Form action triggers for saving or discarding modifications */}
           <div className="d-flex gap-3">
             <button
               type="submit"

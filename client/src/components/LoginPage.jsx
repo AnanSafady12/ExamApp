@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+// Renders the login form for authenticating users
 function LoginPage({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Form submit handler that triggers the login service call
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -32,6 +34,7 @@ function LoginPage({ onLogin }) {
                 <p className="text-muted">Sign in to your account</p>
               </div>
 
+              {/* Login Credentials Form */}
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="login-username" className="form-label fw-semibold">Username</label>
@@ -72,12 +75,14 @@ function LoginPage({ onLogin }) {
                 </button>
               </form>
 
+              {/* Shows error messages when credentials checks fail */}
               {error && (
                 <div className="alert alert-danger mt-3 mb-0 text-center" style={{ borderRadius: '12px' }}>
                   {error}
                 </div>
               )}
 
+              {/* Direct Link element to load the Register form page */}
               <div className="text-center mt-4">
                 <span className="text-muted">Don't have an account? </span>
                 <Link
@@ -88,6 +93,7 @@ function LoginPage({ onLogin }) {
                 </Link>
               </div>
 
+              {/* Helpful section listing default credentials to assist testing */}
               <div className="mt-4 p-3 rounded-3" style={{ backgroundColor: '#f8f9fa' }}>
                 <small className="text-muted d-block mb-1 fw-semibold">Demo Accounts:</small>
                 <small className="text-muted d-block">Teacher: teacher1 / pass123</small>

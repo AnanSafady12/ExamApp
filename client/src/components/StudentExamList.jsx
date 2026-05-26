@@ -1,6 +1,8 @@
+// Renders a grid listing published exams that are available for students to take
 function StudentExamList({ exams, onStartExam }) {
   return (
     <div className="row g-4">
+      {/* If there are no published exams, render an empty state block placeholder */}
       {exams.length === 0 ? (
         <div className="col-12 text-center py-5">
           <div className="search-container shadow-sm mx-auto" style={{ maxWidth: 600 }}>
@@ -10,6 +12,7 @@ function StudentExamList({ exams, onStartExam }) {
           </div>
         </div>
       ) : (
+        /* Iterate and render published active exams cards */
         exams.map((exam) => (
           <div key={exam.id} className="col-md-6 col-lg-4">
             <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">

@@ -1,6 +1,8 @@
 import ExamCard from './ExamCard';
 
+// Renders a grid list containing individual ExamCard components
 function ExamList({ exams, onViewScores, onEdit, onDelete, onStatusChange }) {
+  // If the exams list is empty, display a clean fallback placeholder card
   if (exams.length === 0) {
     return (
       <div className="text-center p-5 border rounded-4 bg-light">
@@ -12,6 +14,7 @@ function ExamList({ exams, onViewScores, onEdit, onDelete, onStatusChange }) {
 
   return (
     <div className="row g-4">
+      {/* Map through the exams list and render an ExamCard for each entry */}
       {exams.map((exam) => (
         <div className="col-md-4 col-sm-6" key={exam.id}>
           <ExamCard
