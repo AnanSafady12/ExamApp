@@ -173,31 +173,51 @@ erDiagram
 ### Use Case Diagram
 ```mermaid
 graph TD
-    Teacher[Teacher User]
-    Student[Student User]
-
-    subgraph Teacher Actions
-        Teacher --> UC1[Create Exam]
-        Teacher --> UC2[Edit Exam]
-        Teacher --> UC3[Delete Exam]
-        Teacher --> UC4[Change Exam Status]
-        Teacher --> UC5[View Exam Scores]
+    subgraph Shared Actions
+        UC11[Login / Register]
+        UC11_2[Logout]
+        UC12[Services Sandbox Test Bench]
     end
+
+    Student[Student User]
+    Teacher[Teacher User]
 
     subgraph Student Actions
-        Student --> UC6[View Published Exams]
-        Student --> UC7[Start Exam]
-        Student --> UC8[Select Answers]
-        Student --> UC9[Submit Exam]
-        Student --> UC10[View Results Summary]
+        UC6[View Published Exams]
+        UC7[Start Exam]
+        UC8[Select Answers]
+        UC9[Submit Exam]
+        UC10[View Results Summary]
     end
 
-    subgraph Shared Actions
-        Teacher --> UC11[Login / Register]
-        Student --> UC11
-        Teacher --> UC12[Services Sandbox Test Bench]
-        Student --> UC12
+    subgraph Teacher Actions
+        UC1[Create Exam]
+        UC2[Edit Exam]
+        UC3[Delete Exam]
+        UC4[Change Exam Status]
+        UC5[View Exam Scores]
     end
+
+    %% Connections
+    Student --> UC11
+    Student --> UC11_2
+    Student --> UC12
+
+    Teacher --> UC11
+    Teacher --> UC11_2
+    Teacher --> UC12
+
+    Student --> UC6
+    Student --> UC7
+    Student --> UC8
+    Student --> UC9
+    Student --> UC10
+
+    Teacher --> UC1
+    Teacher --> UC2
+    Teacher --> UC3
+    Teacher --> UC4
+    Teacher --> UC5
 ```
 
 ## Architecture & Generic Services

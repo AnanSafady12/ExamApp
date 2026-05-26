@@ -152,7 +152,7 @@ function TeacherDashboard() {
   return (
     <div className="container p-0">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold text-dark mb-0">📋 Teacher Dashboard</h2>
+        <h2 className="fw-bold mb-0">📋 Teacher Dashboard</h2>
         {!showForm && (
           <button
             className="btn btn-primary fw-semibold px-4 py-2"

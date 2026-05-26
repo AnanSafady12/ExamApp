@@ -26,78 +26,80 @@ function LoginPage({ onLogin }) {
     <div className="container py-5">
       <div className="row justify-content-center">
         <div className="col-md-5">
-          <div className="card shadow" style={{ borderRadius: '16px', border: 'none' }}>
-            <div className="card-body p-4">
-              <div className="text-center mb-4">
-                <span className="display-4">📝</span>
-                <h2 className="fw-bold mt-2">E-Test Login</h2>
-                <p className="text-muted">Sign in to your account</p>
+          <div className="card-premium">
+            <div className="text-center mb-4">
+              <div className="d-inline-flex align-items-center justify-content-center bg-light rounded-circle shadow-sm mb-3" style={{ width: '70px', height: '70px', background: 'var(--primary-light)' }}>
+                <span style={{ fontSize: '2rem' }}>📝</span>
+              </div>
+              <h2 className="fw-bold mt-2 mb-1" style={{ color: 'var(--text-h)' }}>Welcome Back</h2>
+              <p className="text-muted" style={{ fontSize: '14px' }}>Sign in to continue your assessment</p>
+            </div>
+
+            {/* Login Credentials Form */}
+            <form onSubmit={handleSubmit}>
+              <div className="form-floating-custom">
+                <input
+                  id="login-username"
+                  type="text"
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
               </div>
 
-              {/* Login Credentials Form */}
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="login-username" className="form-label fw-semibold">Username</label>
-                  <input
-                    id="login-username"
-                    type="text"
-                    className="form-control form-control-lg"
-                    placeholder="Enter username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    style={{ borderRadius: '12px' }}
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label htmlFor="login-password" className="form-label fw-semibold">Password</label>
-                  <input
-                    id="login-password"
-                    type="password"
-                    className="form-control form-control-lg"
-                    placeholder="Enter password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    style={{ borderRadius: '12px' }}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-lg w-100 fw-bold"
-                  disabled={loading}
-                  style={{ borderRadius: '12px' }}
-                >
-                  {loading ? (
-                    <span className="spinner-border spinner-border-sm me-2" role="status" />
-                  ) : null}
-                  {loading ? 'Signing in...' : 'Sign In'}
-                </button>
-              </form>
-
-              {/* Shows error messages when credentials checks fail */}
-              {error && (
-                <div className="alert alert-danger mt-3 mb-0 text-center" style={{ borderRadius: '12px' }}>
-                  {error}
-                </div>
-              )}
-
-              {/* Direct Link element to load the Register form page */}
-              <div className="text-center mt-4">
-                <span className="text-muted">Don't have an account? </span>
-                <Link
-                  className="fw-semibold text-decoration-none"
-                  to="/register"
-                >
-                  Register
-                </Link>
+              <div className="form-floating-custom">
+                <input
+                  id="login-password"
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
               </div>
 
-              {/* Helpful section listing default credentials to assist testing */}
-              <div className="mt-4 p-3 rounded-3" style={{ backgroundColor: '#f8f9fa' }}>
-                <small className="text-muted d-block mb-1 fw-semibold">Demo Accounts:</small>
-                <small className="text-muted d-block">Teacher: teacher1 / pass123</small>
-                <small className="text-muted d-block">Student: student1 / pass123</small>
+              <button
+                type="submit"
+                className="btn-primary-custom w-100 fw-semibold py-2 fs-5 mt-2"
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="spinner-border spinner-border-sm me-2" role="status" />
+                ) : null}
+                {loading ? 'Authenticating...' : 'Sign In'}
+              </button>
+            </form>
+
+            {/* Shows error messages when credentials checks fail */}
+            {error && (
+              <div className="alert alert-danger mt-3 mb-0 text-center border-0 py-2" style={{ borderRadius: '12px', background: 'var(--danger-light)', color: 'var(--danger)' }}>
+                ⚠️ {error}
+              </div>
+            )}
+
+            {/* Direct Link element to load the Register form page */}
+            <div className="text-center mt-4">
+              <span className="text-muted" style={{ fontSize: '14px' }}>Don't have an account? </span>
+              <Link
+                className="fw-bold text-decoration-none"
+                to="/register"
+                style={{ color: 'var(--primary)' }}
+              >
+                Create Account
+              </Link>
+            </div>
+
+            {/* Helpful section listing default credentials to assist testing */}
+            <div className="mt-4 p-3 rounded-4 border-0" style={{ backgroundColor: 'var(--primary-light)', padding: '16px' }}>
+              <small className="d-block mb-2 fw-bold text-uppercase" style={{ fontSize: '11px', letterSpacing: '0.05em', color: 'var(--primary)' }}>🛠️ Quick Test Accounts</small>
+              <div className="d-flex justify-content-between mb-1" style={{ fontSize: '13px' }}>
+                <span className="text-muted">👨‍🏫 Teacher:</span>
+                <code style={{ color: 'var(--text-h)' }}>teacher1 / pass123</code>
+              </div>
+              <div className="d-flex justify-content-between" style={{ fontSize: '13px' }}>
+                <span className="text-muted">🎓 Student:</span>
+                <code style={{ color: 'var(--text-h)' }}>student1 / pass123</code>
               </div>
             </div>
           </div>

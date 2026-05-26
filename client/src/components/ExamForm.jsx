@@ -108,50 +108,54 @@ function ExamForm({ exam, onSubmit, onCancel }) {
   };
 
   return (
-    <div className="card border-0 shadow-sm mb-4" style={{ borderRadius: '16px' }}>
-      <div className="card-body p-4">
-        <h4 className="fw-bold mb-4">{isEditing ? '✏️ Edit Exam' : '➕ Create New Exam'}</h4>
+    <div className="card-premium mb-4" style={{ padding: '28px' }}>
+      <h4 className="fw-bold mb-4" style={{ color: 'var(--text-h)', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
+        {isEditing ? 'Edit Exam' : 'Create New Exam'}
+      </h4>
 
-        <form onSubmit={handleSubmit}>
-          {/* Title Input field */}
-          <div className="mb-4">
-            <label htmlFor="exam-title" className="form-label fw-semibold">
-              Exam Title
-            </label>
-            <input
-              id="exam-title"
-              type="text"
-              className={`form-control form-control-lg ${errors.title ? 'is-invalid' : ''}`}
-              placeholder="Enter exam title..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              style={{ borderRadius: '10px' }}
-            />
-            {errors.title && <div className="invalid-feedback">{errors.title}</div>}
+      <form onSubmit={handleSubmit}>
+        {/* Title Input field */}
+        <div className="mb-4">
+          <label htmlFor="exam-title" className="form-label fw-bold small text-uppercase" style={{ color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
+            Exam Title
+          </label>
+          <input
+            id="exam-title"
+            type="text"
+            className={`form-control form-control-lg ${errors.title ? 'is-invalid' : ''}`}
+            placeholder="Enter exam title..."
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            style={{ borderRadius: '12px', fontSize: '16px', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
+          />
+          {errors.title && <div className="invalid-feedback">{errors.title}</div>}
+        </div>
+
+        {/* Validation warnings alerts */}
+        {errors.questions && (
+          <div className="alert alert-danger border-0" style={{ borderRadius: '12px', background: 'var(--danger-light)', color: 'var(--danger)' }}>
+            ⚠️ {errors.questions}
           </div>
+        )}
 
-          {/* Validation warnings alerts */}
-          {errors.questions && (
-            <div className="alert alert-danger" style={{ borderRadius: '10px' }}>
-              {errors.questions}
-            </div>
-          )}
-
-          {/* Dynamically renders sections for each question in the form */}
+        {/* Dynamically renders sections for each question in the form */}
+        <div className="d-flex flex-column gap-3 mb-4">
           {questions.map((q, qIndex) => (
             <div
               key={q.id}
-              className="border rounded-4 p-3 mb-3 bg-light"
-              style={{ borderRadius: '12px' }}
+              className="p-4 border rounded-4"
+              style={{ background: 'var(--primary-light)', borderColor: 'var(--primary-border)' }}
             >
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h6 className="fw-bold mb-0">Question {qIndex + 1}</h6>
+                <h5 className="fw-bold mb-0" style={{ color: 'var(--primary)', fontSize: '1.1rem' }}>
+                  Question {qIndex + 1}
+                </h5>
                 {questions.length > 1 && (
                   <button
                     type="button"
-                    className="btn btn-outline-danger btn-sm"
+                    className="btn btn-outline-danger btn-sm border-0 px-3 py-1 fw-bold"
                     onClick={() => removeQuestion(qIndex)}
-                    style={{ borderRadius: '8px' }}
+                    style={{ borderRadius: '8px', background: 'var(--danger-light)', color: 'var(--danger)' }}
                   >
                     Remove
                   </button>
@@ -166,7 +170,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
                   placeholder="Question text..."
                   value={q.text}
                   onChange={(e) => updateQuestion(qIndex, 'text', e.target.value)}
-                  style={{ borderRadius: '8px' }}
+                  style={{ borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
                 />
                 {errors[`q_${qIndex}_text`] && (
                   <div className="invalid-feedback">{errors[`q_${qIndex}_text`]}</div>
@@ -178,7 +182,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
                 {q.options.map((opt, oIndex) => (
                   <div className="col-md-6" key={oIndex}>
                     <div className="input-group">
-                      <span className="input-group-text" style={{ borderRadius: '8px 0 0 8px' }}>
+                      <span className="input-group-text fw-bold text-muted border-0" style={{ borderRadius: '10px 0 0 10px', background: 'var(--border)' }}>
                         {String.fromCharCode(65 + oIndex)}
                       </span>
                       <input
@@ -187,7 +191,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
                         placeholder={`Option ${oIndex + 1}`}
                         value={opt}
                         onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
-                        style={{ borderRadius: '0 8px 8px 0' }}
+                        style={{ borderRadius: '0 10px 10px 0', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
                       />
                     </div>
                   </div>
@@ -196,19 +200,21 @@ function ExamForm({ exam, onSubmit, onCancel }) {
 
               {/* Select menu to specify the correct choice out of options */}
               <div>
-                <label className="form-label fw-semibold small">Correct Answer</label>
+                <label className="form-label fw-bold small text-uppercase" style={{ color: 'var(--text-muted)', fontSize: '11px', letterSpacing: '0.05em' }}>
+                  Correct Option Choice
+                </label>
                 <select
                   className={`form-select ${errors[`q_${qIndex}_answer`] ? 'is-invalid' : ''}`}
                   value={q.correctAnswer}
                   onChange={(e) => updateQuestion(qIndex, 'correctAnswer', e.target.value)}
-                  style={{ borderRadius: '8px' }}
+                  style={{ borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
                 >
                   <option value="">Select correct answer...</option>
                   {q.options.map(
                     (opt, oIndex) =>
                       opt.trim() && (
                         <option key={oIndex} value={opt.trim()}>
-                          {String.fromCharCode(65 + oIndex)}: {opt.trim()}
+                          {opt.trim()}
                         </option>
                       )
                   )}
@@ -219,37 +225,36 @@ function ExamForm({ exam, onSubmit, onCancel }) {
               </div>
             </div>
           ))}
+        </div>
 
-          {/* Button to dynamically append new questions fields */}
+        {/* Button to dynamically append new questions fields */}
+        <button
+          type="button"
+          className="btn btn-outline-secondary w-100 mb-4 py-2.5 fw-bold"
+          onClick={addQuestion}
+          style={{ borderRadius: '12px', border: '2px dashed var(--border)', color: 'var(--text-muted)' }}
+        >
+          ➕ Add Question
+        </button>
+
+        {/* Form action triggers for saving or discarding modifications */}
+        <div className="d-flex gap-3">
+          <button
+            type="submit"
+            className="btn-primary-custom flex-grow-1 py-2 fw-bold"
+          >
+            {isEditing ? 'Save Changes' : 'Create Exam'}
+          </button>
           <button
             type="button"
-            className="btn btn-outline-secondary w-100 mb-4 py-2 fw-semibold"
-            onClick={addQuestion}
-            style={{ borderRadius: '10px' }}
+            className="btn btn-outline-secondary py-2 fw-semibold px-4"
+            onClick={onCancel}
+            style={{ borderRadius: '10px', border: '1.5px solid var(--border)', color: 'var(--text)', background: 'var(--bg-card)' }}
           >
-            + Add Question
+            Cancel
           </button>
-
-          {/* Form action triggers for saving or discarding modifications */}
-          <div className="d-flex gap-3">
-            <button
-              type="submit"
-              className="btn btn-primary flex-grow-1 py-2 fw-semibold"
-              style={{ borderRadius: '10px' }}
-            >
-              {isEditing ? 'Save Changes' : 'Create Exam'}
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline-secondary py-2 fw-semibold px-4"
-              onClick={onCancel}
-              style={{ borderRadius: '10px' }}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }
