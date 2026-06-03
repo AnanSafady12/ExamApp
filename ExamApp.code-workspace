@@ -1,0 +1,48 @@
+{
+	"folders": [
+		{
+			"name": "Client",
+			"path": "client"
+		},
+		{
+			"name": "Server",
+			"path": "server"
+		},
+		{
+			"name": "Root Project",
+			"path": "."
+		}
+	],
+	"settings": {},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"type": "node",
+				"request": "launch",
+				"name": "Launch Server",
+				"skipFiles": [
+					"<node_internals>/**"
+				],
+				"program": "${workspaceFolder:Server}/src/index.js",
+				"cwd": "${workspaceFolder:Server}"
+			},
+			{
+				"type": "chrome",
+				"request": "launch",
+				"name": "Launch Client Only",
+				"url": "http://localhost:5173",
+				"webRoot": "${workspaceFolder:Client}"
+			}
+		],
+		"compounds": [
+			{
+				"name": "Debug Both (Client & Server)",
+				"configurations": [
+					"Launch Server",
+					"Launch Client Only"
+				]
+			}
+		]
+	}
+}

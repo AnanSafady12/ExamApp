@@ -1,1 +1,13 @@
+# Dependency directories
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Build outputs
+client/dist/
 client/.vite/
+
+# OS metadata
+.DS_Store
+server/.DS_Store
+client/.DS_Store

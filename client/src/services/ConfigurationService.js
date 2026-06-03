@@ -1,3 +1,7 @@
+import storageService from './StorageService';
+
+const isTestEnv = typeof process !== 'undefined' && (process.env.NODE_ENV === 'test' || process.env.VITEST);
+
 // ConfigurationService holds static and dynamic configuration settings for the app
 class ConfigurationService {
   constructor() {
@@ -6,8 +10,19 @@ class ConfigurationService {
       version: '1.1.0',
       defaultRole: 'STUDENT',
       apiDelay: 600,
-      maxLogs: 10
+      maxLogs: 10,
+      useServer: false,
+      serverUrl: 'http://localhost:3001'
     };
+
+    if (!isTestEnv) {
+      try {
+        const overrides = storageService.get('config_overrides', {});
+        this.config = { ...this.config, ...overrides };
+      } catch (e) {
+        console.warn('Failed to load configuration overrides:', e);
+      }
+    }
   }
 
   // Get a specific config value, or fallback to the defaultValue if key doesn't exist
@@ -17,7 +32,22 @@ class ConfigurationService {
 
   // Change or add a new configuration setting dynamically
   set(key, value) {
-    this.config[key] = value;
+    let parsedValue = value;
+    if (value === 'true' || value === true) parsedValue = true;
+    else if (value === 'false' || value === false) parsedValue = false;
+    else if (value !== '' && !isNaN(value)) parsedValue = Number(value);
+
+    this.config[key] = parsedValue;
+
+    if (!isTestEnv) {
+      try {
+        const overrides = storageService.get('config_overrides', {});
+        overrides[key] = parsedValue;
+        storageService.set('config_overrides', overrides);
+      } catch (e) {
+        console.warn('Failed to save configuration overrides:', e);
+      }
+    }
   }
 
   // Return a copy of the entire config object
