@@ -7,6 +7,7 @@ export let exams = [
   {
     id: 1,
     title: 'JavaScript Fundamentals',
+    timeLimit: 60,
     status: 'published',
     questions: [
       {
@@ -32,6 +33,7 @@ export let exams = [
   {
     id: 2,
     title: 'React Essentials',
+    timeLimit: 60,
     status: 'published',
     questions: [
       {
@@ -68,6 +70,7 @@ export let exams = [
   {
     id: 3,
     title: 'Node.js Basics',
+    timeLimit: 60,
     status: 'draft',
     questions: [
       {

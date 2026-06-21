@@ -92,7 +92,7 @@ app.get('/api/exams/:id', (req, res) => {
 
 // POST /api/exams - create new exam
 app.post('/api/exams', (req, res) => {
-  const { title, status, questions } = req.body;
+  const { title, timeLimit, status, questions } = req.body;
 
   if (!title || !questions) {
     return res.status(400).json({ error: 'Title and questions are required' });
@@ -101,6 +101,7 @@ app.post('/api/exams', (req, res) => {
   const newExam = {
     id: exams.length ? Math.max(...exams.map((e) => e.id)) + 1 : 1,
     title,
+    timeLimit: timeLimit || 60,
     status: status || 'draft',
     questions
   };

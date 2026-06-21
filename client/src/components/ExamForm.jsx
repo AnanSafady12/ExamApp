@@ -11,6 +11,7 @@ const EMPTY_QUESTION = () => ({
 // Form component that manages inputs to create new exams or edit existing ones
 function ExamForm({ exam, onSubmit, onCancel }) {
   const [title, setTitle] = useState('');
+  const [timeLimit, setTimeLimit] = useState(60);
   const [questions, setQuestions] = useState([EMPTY_QUESTION()]);
   const [errors, setErrors] = useState({});
 
@@ -20,6 +21,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
   useEffect(() => {
     if (exam) {
       setTitle(exam.title);
+      setTimeLimit(exam.timeLimit || 60);
       setQuestions(
         exam.questions.map((q) => ({
           id: q.id,
@@ -37,6 +39,10 @@ function ExamForm({ exam, onSubmit, onCancel }) {
 
     if (!title.trim()) {
       newErrors.title = 'Exam title is required';
+    }
+
+    if (!timeLimit || timeLimit <= 0) {
+      newErrors.timeLimit = 'Time limit must be greater than 0';
     }
 
     if (questions.length === 0) {
@@ -68,6 +74,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
 
     onSubmit({
       title: title.trim(),
+      timeLimit: Number(timeLimit),
       questions: questions.map((q) => ({
         id: q.id,
         text: q.text.trim(),
@@ -129,6 +136,24 @@ function ExamForm({ exam, onSubmit, onCancel }) {
             style={{ borderRadius: '12px', fontSize: '16px', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
           />
           {errors.title && <div className="invalid-feedback">{errors.title}</div>}
+        </div>
+
+        {/* Time Limit Input field */}
+        <div className="mb-4">
+          <label htmlFor="exam-time-limit" className="form-label fw-bold small text-uppercase" style={{ color: 'var(--text-muted)', letterSpacing: '0.05em' }}>
+            Time Limit (Minutes)
+          </label>
+          <input
+            id="exam-time-limit"
+            type="number"
+            min="1"
+            className={`form-control form-control-lg ${errors.timeLimit ? 'is-invalid' : ''}`}
+            placeholder="Enter time limit in minutes..."
+            value={timeLimit}
+            onChange={(e) => setTimeLimit(e.target.value)}
+            style={{ borderRadius: '12px', fontSize: '16px', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
+          />
+          {errors.timeLimit && <div className="invalid-feedback">{errors.timeLimit}</div>}
         </div>
 
         {/* Validation warnings alerts */}
