@@ -2,8 +2,8 @@
 
 :root {
   /* HSL Color System - Permanent Deep Dark Theme */
-  --bg: #06080d; /* Deep obsidian black */
-  --bg-card: rgba(16, 20, 32, 0.7); /* Translucent dark navy for glass cards */
+  --bg: #0f172a; /* Slate 900 - Dark gray */
+  --bg-card: rgba(30, 41, 59, 0.7); /* Slate 800 translucent */
   --bg-card-hover: rgba(22, 28, 46, 0.85);
   --text: #cbd5e1; /* Soft slate gray for standard text */
   --text-h: #ffffff; /* Bright white for headings */

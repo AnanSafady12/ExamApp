@@ -8,7 +8,7 @@ textarea,
 .form-control,
 .form-select {
   width: 100%;
-  background-color: #0b0c10 !important; /* Deep dark background */
+  background-color: #1e293b !important; /* Slate 800 */
   color: #ffffff !important; /* Pure white text color */
   border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 12px;
@@ -33,7 +33,7 @@ textarea:focus,
 .form-control:focus,
 .form-select:focus {
   border-color: var(--primary) !important;
-  background-color: #06080d !important;
+  background-color: #0f172a !important; /* Slate 900 */
   color: #ffffff !important;
   box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.25) !important;
   outline: none !important;
