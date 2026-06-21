@@ -112,67 +112,6 @@ function StudentPortal() {
 
   return (
     <div className="student-portal animate-in">
-      <style>{`
-        .animate-in {
-          animation: fadeIn 0.5s ease-out;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .option-btn {
-          text-align: left;
-          transition: all 0.2s ease;
-          border-width: 2px;
-          border-radius: 12px;
-          padding: 12px 20px;
-          margin-bottom: 10px;
-          width: 100%;
-          font-weight: 500;
-        }
-        .option-btn:not(:disabled):hover {
-          transform: translateX(5px);
-          background-color: #f8f9fa;
-          border-color: #0d6efd;
-        }
-        .option-btn.active {
-          background-color: #e7f1ff;
-          border-color: #0d6efd;
-          color: #084298;
-        }
-        .exam-card {
-          border: none;
-          border-radius: 20px;
-          overflow: hidden;
-        }
-        .question-box {
-          background: #ffffff;
-          border-radius: 16px;
-          padding: 24px;
-          margin-bottom: 24px;
-          border: 1px solid #e9ecef;
-          transition: box-shadow 0.3s ease;
-        }
-        .question-box:hover {
-          box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        }
-        .score-display {
-          background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
-          color: white;
-          border-radius: 16px;
-          padding: 30px;
-          text-align: center;
-          margin-top: 20px;
-        }
-        .search-container {
-          background-color: #f8f9fa;
-          border-radius: 24px;
-          padding: 40px;
-          text-align: center;
-          border: 1px dashed #dee2e6;
-        }
-      `}</style>
-
       {/* Header section with page title and exit button */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
