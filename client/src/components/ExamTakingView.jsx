@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import QuestionCard from './QuestionCard';
 
 // Renders the active test-taking UI panel for a student taking a published exam
@@ -11,6 +12,36 @@ function ExamTakingView({
   onSubmit,
   onExit,
 }) {
+  // Initialize timeLeft using exam.timeLimit (in minutes) converted to seconds. Default to 60 if not provided.
+  const [timeLeft, setTimeLeft] = useState((exam.timeLimit || 60) * 60);
+
+  // Timer countdown effect
+  useEffect(() => {
+    // Stop the timer if submitted or time is up
+    if (submitted || timeLeft <= 0) return;
+
+    const timerId = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerId);
+          // Auto-submit when time is up
+          onSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [submitted, timeLeft, onSubmit]);
+
+  // Format timeLeft into MM:SS
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   // Count the number of correct choices selected
   const score = exam.questions.reduce(
     (acc, q) => acc + (answers[q.id] === q.correctAnswer ? 1 : 0),
@@ -44,7 +75,14 @@ function ExamTakingView({
               <span>📋 {exam.questions.length} Question{exam.questions.length !== 1 && 's'}</span>
             </p>
           </div>
-          {submitted && (
+          {!submitted ? (
+            <div className="text-end">
+              <span className={`fw-bold px-3 py-2 rounded-3 ${timeLeft < 60 ? 'bg-danger text-white' : ''}`} style={{ background: timeLeft < 60 ? '' : 'var(--primary-light)', color: timeLeft < 60 ? '' : 'var(--primary)', fontSize: '18px', transition: 'all 0.3s' }}>
+                ⏱ {formatTime(timeLeft)}
+              </span>
+              <div className="small text-muted mt-1 fw-bold text-uppercase" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Time Remaining</div>
+            </div>
+          ) : (
             <div className="text-end">
               <span className="fw-bold px-3 py-2 rounded-3" style={{ background: 'var(--primary-light)', color: 'var(--primary)', fontSize: '18px' }}>
                 {scorePercentage}%
