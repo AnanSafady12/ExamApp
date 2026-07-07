@@ -1,4 +1,5 @@
 import pool from './connect.js';
+import bcrypt from 'bcryptjs';
 
 async function seed() {
   console.log('🌱 Starting database seeding...');
@@ -17,7 +18,7 @@ async function seed() {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         username VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
-        role VARCHAR(50) NOT NULL CHECK (role IN ('LECTURER', 'STUDENT')),
+        role VARCHAR(50) NOT NULL CHECK (role IN ('TEACHER', 'STUDENT')),
         name VARCHAR(255) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -32,6 +33,7 @@ async function seed() {
         time_limit INTEGER NOT NULL DEFAULT 60,
         passing_grade INTEGER NOT NULL DEFAULT 60,
         questions JSONB NOT NULL,
+        results_released BOOLEAN NOT NULL DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -53,15 +55,16 @@ async function seed() {
 
     // 5. Seed Users
     console.log('👥 Inserting users...');
+    const hashedPassword = bcrypt.hashSync('pass123', 10);
     const userInsertResult = await pool.query(`
       INSERT INTO users (username, password, role, name) VALUES
-      ('teacher1', 'pass123', 'LECTURER', 'Sarah Cohen'),
-      ('teacher2', 'pass123', 'LECTURER', 'David Levi'),
-      ('student1', 'pass123', 'STUDENT', 'Alice Johnson'),
-      ('student2', 'pass123', 'STUDENT', 'Bob Smith'),
-      ('student3', 'pass123', 'STUDENT', 'Charlie Davis')
+      ('teacher1', $1, 'TEACHER', 'Sarah Cohen'),
+      ('teacher2', $1, 'TEACHER', 'David Levi'),
+      ('student1', $1, 'STUDENT', 'Alice Johnson'),
+      ('student2', $1, 'STUDENT', 'Bob Smith'),
+      ('student3', $1, 'STUDENT', 'Charlie Davis')
       RETURNING id, username;
-    `);
+    `, [hashedPassword]);
     
     // Map usernames to their generated UUIDs
     const userMap = {};

@@ -8,7 +8,7 @@ CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL CHECK (role IN ('LECTURER', 'STUDENT')),
+    role VARCHAR(50) NOT NULL CHECK (role IN ('TEACHER', 'STUDENT')),
     name VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -20,6 +20,7 @@ CREATE TABLE exams (
     time_limit INTEGER NOT NULL DEFAULT 60,
     passing_grade INTEGER NOT NULL DEFAULT 60,
     questions JSONB NOT NULL, -- Hybrid approach: stores questions array as JSONB
+    results_released BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
