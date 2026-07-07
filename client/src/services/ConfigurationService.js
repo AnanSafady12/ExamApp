@@ -11,7 +11,7 @@ class ConfigurationService {
       defaultRole: 'STUDENT',
       apiDelay: 600,
       maxLogs: 10,
-      useServer: false,
+      useServer: true,
       serverUrl: 'http://localhost:3001'
     };
 
