@@ -15,7 +15,9 @@ class ConfigurationService {
       serverUrl: 'http://localhost:3001'
     };
 
-    if (!isTestEnv) {
+    if (isTestEnv) {
+      this.config.useServer = false;
+    } else {
       try {
         const overrides = storageService.get('config_overrides', {});
         this.config = { ...this.config, ...overrides };

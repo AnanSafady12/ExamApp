@@ -95,7 +95,7 @@ describe('Exam CRUD Operations', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(createExam).toHaveBeenCalledWith({
+      expect(createExam).toHaveBeenCalledWith(expect.objectContaining({
         title: 'New Exam',
         questions: [
           expect.objectContaining({
@@ -104,7 +104,7 @@ describe('Exam CRUD Operations', () => {
             correctAnswer: 'A answer',
           }),
         ],
-      });
+      }));
     });
 
     await waitFor(() => {

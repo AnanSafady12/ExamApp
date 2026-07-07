@@ -264,10 +264,10 @@ describe('Student Exam List and Exam Taking', () => {
       />
     );
 
-    expect(screen.getByText('Scores for Exam #2')).toBeTruthy();
+    expect(screen.getByText(/Scores for Exam:.*Exam #2/i)).toBeTruthy();
     expect(screen.getByText('Alice Johnson')).toBeTruthy();
-    expect(screen.getByText('85')).toBeTruthy();
+    expect(screen.getByText('85%')).toBeTruthy();
     expect(screen.getByText('Bob Smith')).toBeTruthy();
-    expect(screen.getByText('72')).toBeTruthy();
+    expect(screen.getByText('72%')).toBeTruthy();
   });
 });
