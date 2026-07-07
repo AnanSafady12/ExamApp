@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { users, exams, studentScores, ROLES } from './db.js';
+import userRoutes from './routes/userRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,64 +16,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── Auth Endpoints ──────────────────────────────────────────
-
-// Login endpoint
-app.post('/api/users/login', (req, res) => {
-  const { username, password } = req.body;
-  const user = users.find((u) => u.username === username && u.password === password);
-  
-  if (!user) {
-    return res.status(401).json({ error: 'Invalid username or password' });
-  }
-  
-  // Return user details without password
-  const { password: _, ...safeUser } = user;
-  res.json(safeUser);
-});
-
-// Register endpoint
-app.post('/api/users/register', (req, res) => {
-  const { username, password, fullName, role } = req.body;
-
-  if (!username || !password || !fullName || !role) {
-    return res.status(400).json({ error: 'All fields are required' });
-  }
-
-  if (!Object.values(ROLES).includes(role)) {
-    return res.status(400).json({ error: 'Invalid role' });
-  }
-
-  const exists = users.find((u) => u.username === username);
-  if (exists) {
-    return res.status(400).json({ error: 'Username already exists' });
-  }
-
-  const newUser = {
-    id: users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1,
-    username,
-    password,
-    fullName,
-    role
-  };
-
-  users.push(newUser);
-  const { password: _, ...safeUser } = newUser;
-  res.status(201).json(safeUser);
-});
-
-// Get user profile by username
-app.get('/api/users/:username', (req, res) => {
-  const { username } = req.params;
-  const user = users.find((u) => u.username === username);
-
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-
-  const { password: _, ...safeUser } = user;
-  res.json(safeUser);
-});
+// Register routes
+app.use('/api/users', userRoutes);
 
 // ── Exam CRUD Endpoints ─────────────────────────────────────
 

@@ -6,6 +6,22 @@ const FAKE_DELAY = 400;
 const simulateRequest = (data, delay = FAKE_DELAY) =>
   new Promise((resolve) => setTimeout(() => resolve(data), delay));
 
+const getAuthHeaders = () => {
+  const headers = { 'Content-Type': 'application/json' };
+  try {
+    const rawUser = localStorage.getItem('examapp_current_user');
+    if (rawUser) {
+      const user = JSON.parse(rawUser);
+      if (user && user.token) {
+        headers['Authorization'] = `Bearer ${user.token}`;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to parse auth token from localStorage:', error);
+  }
+  return headers;
+};
+
 export const findUserByCredentials = async (username, password) => {
   if (configurationService.get('useServer')) {
     try {
@@ -38,7 +54,9 @@ export const findUserByUsername = async (username) => {
   if (configurationService.get('useServer')) {
     try {
       const serverUrl = configurationService.get('serverUrl');
-      const response = await fetch(`${serverUrl}/api/users/${username}`);
+      const response = await fetch(`${serverUrl}/api/users/${username}`, {
+        headers: getAuthHeaders()
+      });
       if (response.status === 404) return null;
       if (!response.ok) {
         throw new Error('Server connection error');

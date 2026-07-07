@@ -14,13 +14,31 @@ const FAKE_DELAY = 600;
 const simulateRequest = (data, delay = FAKE_DELAY) =>
   new Promise((resolve) => setTimeout(() => resolve(data), delay));
 
+const getAuthHeaders = () => {
+  const headers = { 'Content-Type': 'application/json' };
+  try {
+    const rawUser = localStorage.getItem('examapp_current_user');
+    if (rawUser) {
+      const user = JSON.parse(rawUser);
+      if (user && user.token) {
+        headers['Authorization'] = `Bearer ${user.token}`;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to parse auth token from localStorage:', error);
+  }
+  return headers;
+};
+
 // ── Exam CRUD ──────────────────────────────────────────────
 
 /** GET  /exams          → returns all exams */
 export const getAllExams = async () => {
   if (configurationService.get('useServer')) {
     const serverUrl = configurationService.get('serverUrl');
-    const response = await fetch(`${serverUrl}/api/exams`);
+    const response = await fetch(`${serverUrl}/api/exams`, {
+      headers: getAuthHeaders()
+    });
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
       throw new Error(errData.error || 'Failed to fetch exams');
@@ -35,7 +53,9 @@ export const getAllExams = async () => {
 export const getExamById = async (id) => {
   if (configurationService.get('useServer')) {
     const serverUrl = configurationService.get('serverUrl');
-    const response = await fetch(`${serverUrl}/api/exams/${id}`);
+    const response = await fetch(`${serverUrl}/api/exams/${id}`, {
+      headers: getAuthHeaders()
+    });
     if (response.status === 404) return null;
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
@@ -54,7 +74,7 @@ export const createExam = async (exam) => {
     const serverUrl = configurationService.get('serverUrl');
     const response = await fetch(`${serverUrl}/api/exams`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(exam),
     });
     if (!response.ok) {
@@ -79,7 +99,7 @@ export const updateExam = async (id, updates) => {
     const serverUrl = configurationService.get('serverUrl');
     const response = await fetch(`${serverUrl}/api/exams/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(updates),
     });
     if (response.status === 404) return null;
@@ -102,6 +122,7 @@ export const deleteExam = async (id) => {
     const serverUrl = configurationService.get('serverUrl');
     const response = await fetch(`${serverUrl}/api/exams/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders()
     });
     if (response.status === 404) return false;
     if (!response.ok) {
@@ -123,7 +144,9 @@ export const deleteExam = async (id) => {
 export const getAllScores = async () => {
   if (configurationService.get('useServer')) {
     const serverUrl = configurationService.get('serverUrl');
-    const response = await fetch(`${serverUrl}/api/scores`);
+    const response = await fetch(`${serverUrl}/api/scores`, {
+      headers: getAuthHeaders()
+    });
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
       throw new Error(errData.error || 'Failed to fetch scores');
@@ -138,7 +161,9 @@ export const getAllScores = async () => {
 export const getScoresByExam = async (examId) => {
   if (configurationService.get('useServer')) {
     const serverUrl = configurationService.get('serverUrl');
-    const response = await fetch(`${serverUrl}/api/scores/exam/${examId}`);
+    const response = await fetch(`${serverUrl}/api/scores/exam/${examId}`, {
+      headers: getAuthHeaders()
+    });
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
       throw new Error(errData.error || 'Failed to fetch scores for exam');
@@ -155,7 +180,7 @@ export const saveScore = async (scoreRecord) => {
     const serverUrl = configurationService.get('serverUrl');
     const response = await fetch(`${serverUrl}/api/scores`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(scoreRecord),
     });
     if (!response.ok) {
