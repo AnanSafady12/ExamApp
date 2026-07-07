@@ -42,16 +42,26 @@ function ExamTakingView({
     return `${m}:${s}`;
   };
 
-  // Count the number of correct choices selected
-  const score = exam.questions.reduce(
-    (acc, q) => acc + (answers[q.id] === q.correctAnswer ? 1 : 0),
-    0
-  );
+  // Count the number of correct choices selected (case-insensitive for short answers)
+  const score = exam.questions.reduce((acc, q) => {
+    const studentAns = answers[q.id] || '';
+    const correctAns = q.correctAnswer || '';
+    const isCorrect = q.type === 'SHORT_ANSWER'
+      ? studentAns.trim().toLowerCase() === correctAns.trim().toLowerCase()
+      : studentAns === correctAns;
+    return acc + (isCorrect ? 1 : 0);
+  }, 0);
 
   // Calculates the final score percentage
   const scorePercentage = exam.questions.length
     ? Math.round((score / exam.questions.length) * 100)
     : 0;
+
+  // Verify all questions have non-empty trimmed answers
+  const hasAnsweredAll = exam.questions.every((q) => {
+    const ans = answers[q.id];
+    return ans !== undefined && ans !== null && String(ans).trim() !== '';
+  });
 
   const today = new Date().toLocaleDateString('en-US', {
     month: 'long',
@@ -122,7 +132,7 @@ function ExamTakingView({
                   <button
                     className="btn-primary-custom w-100 fw-bold py-3 fs-5"
                     onClick={onSubmit}
-                    disabled={loading || Object.keys(answers).length < exam.questions.length}
+                    disabled={loading || !hasAnsweredAll}
                   >
                     {loading ? (
                       <span
@@ -134,7 +144,7 @@ function ExamTakingView({
                       'Submit Assessment'
                     )}
                   </button>
-                  {Object.keys(answers).length < exam.questions.length && (
+                  {!hasAnsweredAll && (
                     <p className="text-center text-muted small mt-2" style={{ fontSize: '13px' }}>
                       Please answer all {exam.questions.length} questions to submit.
                     </p>

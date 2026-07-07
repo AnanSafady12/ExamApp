@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 // Generates an empty question structure with unique random IDs
 const EMPTY_QUESTION = () => ({
   id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+  type: 'MULTIPLE_CHOICE',
   text: '',
   options: ['', '', '', ''],
   correctAnswer: '',
@@ -25,8 +26,9 @@ function ExamForm({ exam, onSubmit, onCancel }) {
       setQuestions(
         exam.questions.map((q) => ({
           id: q.id,
+          type: q.type || 'MULTIPLE_CHOICE',
           text: q.text,
-          options: [...q.options],
+          options: [...(q.options || [])],
           correctAnswer: q.correctAnswer,
         }))
       );
@@ -53,13 +55,17 @@ function ExamForm({ exam, onSubmit, onCancel }) {
       if (!q.text.trim()) {
         newErrors[`q_${i}_text`] = `Question ${i + 1} text is required`;
       }
-      q.options.forEach((opt, j) => {
-        if (!opt.trim()) {
-          newErrors[`q_${i}_opt_${j}`] = `Question ${i + 1}, option ${j + 1} is required`;
-        }
-      });
-      if (!q.correctAnswer) {
-        newErrors[`q_${i}_answer`] = `Question ${i + 1} must have a correct answer selected`;
+      
+      if (q.type === 'MULTIPLE_CHOICE') {
+        q.options.forEach((opt, j) => {
+          if (!opt.trim()) {
+            newErrors[`q_${i}_opt_${j}`] = `Question ${i + 1}, option ${j + 1} is required`;
+          }
+        });
+      }
+      
+      if (!q.correctAnswer || !q.correctAnswer.trim()) {
+        newErrors[`q_${i}_answer`] = `Question ${i + 1} must have a correct answer`;
       }
     });
 
@@ -77,9 +83,10 @@ function ExamForm({ exam, onSubmit, onCancel }) {
       timeLimit: Number(timeLimit),
       questions: questions.map((q) => ({
         id: q.id,
+        type: q.type,
         text: q.text.trim(),
         options: q.options.map((o) => o.trim()),
-        correctAnswer: q.correctAnswer,
+        correctAnswer: q.correctAnswer.trim(),
       })),
     });
   };
@@ -88,7 +95,18 @@ function ExamForm({ exam, onSubmit, onCancel }) {
   const updateQuestion = (index, field, value) => {
     setQuestions((prev) => {
       const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
+      if (field === 'type') {
+        let opts = ['', '', '', ''];
+        let correct = '';
+        if (value === 'TRUE_FALSE') {
+          opts = ['True', 'False'];
+        } else if (value === 'SHORT_ANSWER') {
+          opts = [];
+        }
+        updated[index] = { ...updated[index], type: value, options: opts, correctAnswer: correct };
+      } else {
+        updated[index] = { ...updated[index], [field]: value };
+      }
       return updated;
     });
   };
@@ -187,6 +205,23 @@ function ExamForm({ exam, onSubmit, onCancel }) {
                 )}
               </div>
 
+              {/* Question Type Selector */}
+              <div className="mb-3">
+                <label className="form-label fw-bold small text-uppercase" style={{ color: 'var(--text-muted)', fontSize: '11px', letterSpacing: '0.05em' }}>
+                  Question Type
+                </label>
+                <select
+                  className="form-select"
+                  value={q.type}
+                  onChange={(e) => updateQuestion(qIndex, 'type', e.target.value)}
+                  style={{ borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
+                >
+                  <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                  <option value="TRUE_FALSE">True / False</option>
+                  <option value="SHORT_ANSWER">Short Answer</option>
+                </select>
+              </div>
+
               {/* Question Text Input */}
               <div className="mb-3">
                 <input
@@ -202,52 +237,98 @@ function ExamForm({ exam, onSubmit, onCancel }) {
                 )}
               </div>
 
-              {/* Grid holding the 4 multiple-choice options inputs */}
-              <div className="row g-2 mb-3">
-                {q.options.map((opt, oIndex) => (
-                  <div className="col-md-6" key={oIndex}>
-                    <div className="input-group">
-                      <span className="input-group-text fw-bold text-muted border-0" style={{ borderRadius: '10px 0 0 10px', background: 'var(--border)' }}>
-                        {String.fromCharCode(65 + oIndex)}
-                      </span>
-                      <input
-                        type="text"
-                        className={`form-control ${errors[`q_${qIndex}_opt_${oIndex}`] ? 'is-invalid' : ''}`}
-                        placeholder={`Option ${oIndex + 1}`}
-                        value={opt}
-                        onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
-                        style={{ borderRadius: '0 10px 10px 0', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
-                      />
-                    </div>
+              {/* Renders option fields if MULTIPLE_CHOICE */}
+              {q.type === 'MULTIPLE_CHOICE' && (
+                <>
+                  <div className="row g-2 mb-3">
+                    {q.options.map((opt, oIndex) => (
+                      <div className="col-md-6" key={oIndex}>
+                        <div className="input-group">
+                          <span className="input-group-text fw-bold text-muted border-0" style={{ borderRadius: '10px 0 0 10px', background: 'var(--border)' }}>
+                            {String.fromCharCode(65 + oIndex)}
+                          </span>
+                          <input
+                            type="text"
+                            className={`form-control ${errors[`q_${qIndex}_opt_${oIndex}`] ? 'is-invalid' : ''}`}
+                            placeholder={`Option ${oIndex + 1}`}
+                            value={opt}
+                            onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
+                            style={{ borderRadius: '0 10px 10px 0', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              {/* Select menu to specify the correct choice out of options */}
-              <div>
-                <label className="form-label fw-bold small text-uppercase" style={{ color: 'var(--text-muted)', fontSize: '11px', letterSpacing: '0.05em' }}>
-                  Correct Option Choice
-                </label>
-                <select
-                  className={`form-select ${errors[`q_${qIndex}_answer`] ? 'is-invalid' : ''}`}
-                  value={q.correctAnswer}
-                  onChange={(e) => updateQuestion(qIndex, 'correctAnswer', e.target.value)}
-                  style={{ borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
-                >
-                  <option value="">Select correct answer...</option>
-                  {q.options.map(
-                    (opt, oIndex) =>
-                      opt.trim() && (
-                        <option key={oIndex} value={opt.trim()}>
-                          {opt.trim()}
-                        </option>
-                      )
+                  <div>
+                    <label className="form-label fw-bold small text-uppercase" style={{ color: 'var(--text-muted)', fontSize: '11px', letterSpacing: '0.05em' }}>
+                      Correct Option Choice
+                    </label>
+                    <select
+                      className={`form-select ${errors[`q_${qIndex}_answer`] ? 'is-invalid' : ''}`}
+                      value={q.correctAnswer}
+                      onChange={(e) => updateQuestion(qIndex, 'correctAnswer', e.target.value)}
+                      style={{ borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
+                    >
+                      <option value="">Select correct answer...</option>
+                      {q.options.map(
+                        (opt, oIndex) =>
+                          opt.trim() && (
+                            <option key={oIndex} value={opt.trim()}>
+                              {opt.trim()}
+                            </option>
+                          )
+                      )}
+                    </select>
+                    {errors[`q_${qIndex}_answer`] && (
+                      <div className="invalid-feedback">{errors[`q_${qIndex}_answer`]}</div>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* Renders options if TRUE_FALSE */}
+              {q.type === 'TRUE_FALSE' && (
+                <div>
+                  <label className="form-label fw-bold small text-uppercase" style={{ color: 'var(--text-muted)', fontSize: '11px', letterSpacing: '0.05em' }}>
+                    Correct Answer
+                  </label>
+                  <select
+                    className={`form-select ${errors[`q_${qIndex}_answer`] ? 'is-invalid' : ''}`}
+                    value={q.correctAnswer}
+                    onChange={(e) => updateQuestion(qIndex, 'correctAnswer', e.target.value)}
+                    style={{ borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
+                  >
+                    <option value="">Select correct answer...</option>
+                    <option value="True">True</option>
+                    <option value="False">False</option>
+                  </select>
+                  {errors[`q_${qIndex}_answer`] && (
+                    <div className="invalid-feedback">{errors[`q_${qIndex}_answer`]}</div>
                   )}
-                </select>
-                {errors[`q_${qIndex}_answer`] && (
-                  <div className="invalid-feedback">{errors[`q_${qIndex}_answer`]}</div>
-                )}
-              </div>
+                </div>
+              )}
+
+              {/* Renders text box if SHORT_ANSWER */}
+              {q.type === 'SHORT_ANSWER' && (
+                <div>
+                  <label className="form-label fw-bold small text-uppercase" style={{ color: 'var(--text-muted)', fontSize: '11px', letterSpacing: '0.05em' }}>
+                    Correct Short Answer Text
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control ${errors[`q_${qIndex}_answer`] ? 'is-invalid' : ''}`}
+                    placeholder="Enter the correct answer phrase/word..."
+                    value={q.correctAnswer}
+                    onChange={(e) => updateQuestion(qIndex, 'correctAnswer', e.target.value)}
+                    style={{ borderRadius: '10px', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
+                  />
+                  {errors[`q_${qIndex}_answer`] && (
+                    <div className="invalid-feedback">{errors[`q_${qIndex}_answer`]}</div>
+                  )}
+                </div>
+              )}
+
             </div>
           ))}
         </div>

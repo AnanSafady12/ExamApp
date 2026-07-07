@@ -20,6 +20,7 @@ CREATE TABLE exams (
     time_limit INTEGER NOT NULL DEFAULT 60,
     passing_grade INTEGER NOT NULL DEFAULT 60,
     questions JSONB NOT NULL, -- Hybrid approach: stores questions array as JSONB
+    status VARCHAR(50) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'closed')),
     results_released BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
