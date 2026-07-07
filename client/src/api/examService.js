@@ -193,3 +193,39 @@ export const saveScore = async (scoreRecord) => {
   studentScores.push(scoreRecord);
   return simulateRequest(scoreRecord);
 };
+
+export const getStudentSubmissions = async () => {
+  if (configurationService.get('useServer')) {
+    const serverUrl = configurationService.get('serverUrl');
+    const response = await fetch(`${serverUrl}/api/scores/student`, {
+      headers: getAuthHeaders()
+    });
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || 'Failed to fetch student submissions');
+    }
+    return await response.json();
+  }
+  const currentUser = JSON.parse(localStorage.getItem('examapp_current_user') || '{}');
+  return simulateRequest(studentScores.filter(s => s.studentId === currentUser.id));
+};
+
+export const publishResults = async (id) => {
+  if (configurationService.get('useServer')) {
+    const serverUrl = configurationService.get('serverUrl');
+    const response = await fetch(`${serverUrl}/api/exams/${id}/publish-results`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || 'Failed to publish results');
+    }
+    return await response.json();
+  }
+  const exam = exams.find(e => e.id === Number(id) || e.id === id);
+  if (exam) {
+    exam.resultsReleased = true;
+  }
+  return simulateRequest({ success: true });
+};
