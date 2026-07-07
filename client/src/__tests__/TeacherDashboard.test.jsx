@@ -72,7 +72,7 @@ describe('TeacherDashboard Component tests', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Alice Johnson')).toBeTruthy();
-      expect(screen.getByText('85')).toBeTruthy();
+      expect(screen.getByText('85%')).toBeTruthy();
     });
 
     expect(notificationService.success).toHaveBeenCalledWith('Loaded scores for exam #1');

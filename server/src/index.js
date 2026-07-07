@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import { users, exams, studentScores, ROLES } from './db.js';
 import userRoutes from './routes/userRoutes.js';
 import examRoutes from './routes/examRoutes.js';
 import scoreRoutes from './routes/scoreRoutes.js';
