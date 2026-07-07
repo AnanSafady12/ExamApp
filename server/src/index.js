@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { users, exams, studentScores, ROLES } from './db.js';
 import userRoutes from './routes/userRoutes.js';
+import examRoutes from './routes/examRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,67 +19,7 @@ app.use((req, res, next) => {
 
 // Register routes
 app.use('/api/users', userRoutes);
-
-// ── Exam CRUD Endpoints ─────────────────────────────────────
-
-// GET /api/exams - get all exams
-app.get('/api/exams', (req, res) => {
-  res.json([...exams]);
-});
-
-// GET /api/exams/:id - get specific exam
-app.get('/api/exams/:id', (req, res) => {
-  const exam = exams.find((e) => e.id === Number(req.params.id));
-  if (!exam) {
-    return res.status(404).json({ error: 'Exam not found' });
-  }
-  res.json(exam);
-});
-
-// POST /api/exams - create new exam
-app.post('/api/exams', (req, res) => {
-  const { title, timeLimit, status, questions } = req.body;
-
-  if (!title || !questions) {
-    return res.status(400).json({ error: 'Title and questions are required' });
-  }
-
-  const newExam = {
-    id: exams.length ? Math.max(...exams.map((e) => e.id)) + 1 : 1,
-    title,
-    timeLimit: timeLimit || 60,
-    status: status || 'draft',
-    questions
-  };
-
-  exams.push(newExam);
-  res.status(201).json(newExam);
-});
-
-// PUT /api/exams/:id - update existing exam
-app.put('/api/exams/:id', (req, res) => {
-  const examId = Number(req.params.id);
-  const index = exams.findIndex((e) => e.id === examId);
-
-  if (index === -1) {
-    return res.status(404).json({ error: 'Exam not found' });
-  }
-
-  exams[index] = { ...exams[index], ...req.body, id: examId }; // prevent changing ID
-  res.json(exams[index]);
-});
-
-// DELETE /api/exams/:id - delete exam
-app.delete('/api/exams/:id', (req, res) => {
-  const index = exams.findIndex((e) => e.id === Number(req.params.id));
-
-  if (index === -1) {
-    return res.status(404).json({ error: 'Exam not found' });
-  }
-
-  exams.splice(index, 1);
-  res.json({ success: true });
-});
+app.use('/api/exams', examRoutes);
 
 // ── Scores Endpoints ────────────────────────────────────────
 

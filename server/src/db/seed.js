@@ -33,6 +33,7 @@ async function seed() {
         time_limit INTEGER NOT NULL DEFAULT 60,
         passing_grade INTEGER NOT NULL DEFAULT 60,
         questions JSONB NOT NULL,
+        status VARCHAR(50) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'closed')),
         results_released BOOLEAN NOT NULL DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -116,9 +117,9 @@ async function seed() {
     ]);
 
     const examInsertResult = await pool.query(`
-      INSERT INTO exams (title, time_limit, passing_grade, questions) VALUES
-      ('JavaScript Fundamentals', 60, 60, $1),
-      ('React Essentials', 45, 70, $2)
+      INSERT INTO exams (title, time_limit, passing_grade, questions, status) VALUES
+      ('JavaScript Fundamentals', 60, 60, $1, 'published'),
+      ('React Essentials', 45, 70, $2, 'published')
       RETURNING id, title;
     `, [javascriptQuestions, reactQuestions]);
 
