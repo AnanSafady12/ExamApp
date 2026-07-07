@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllExams, getScoresByExam, createExam, updateExam, deleteExam } from './api/examService';
+import { getAllExams, getScoresByExam, createExam, updateExam, deleteExam, publishResults } from './api/examService';
 import ExamList from './components/ExamList';
 import ScoreTable from './components/ScoreTable';
 import ExamForm from './components/ExamForm';
@@ -58,6 +58,17 @@ function TeacherDashboard() {
   // Clear student scores detailed overlay
   const handleCloseScores = () => {
     setSelectedExamScores(null);
+  };
+
+  const handlePublishResults = async (examId) => {
+    try {
+      await publishResults(examId);
+      notificationService.success('Exam results published to students successfully!');
+      loggerService.success(`Published results for exam ID ${examId}`);
+      await fetchExams();
+    } catch (err) {
+      notificationService.error(`Failed to publish results: ${err.message}`);
+    }
   };
 
   // Switch UI to show create form
@@ -196,6 +207,8 @@ function TeacherDashboard() {
         selectedExamScores={selectedExamScores}
         scoresLoading={scoresLoading}
         onClose={handleCloseScores}
+        activeExam={selectedExamScores ? exams.find((e) => e.id === selectedExamScores.examId) : null}
+        onPublishResults={handlePublishResults}
       />
     </div>
   );
