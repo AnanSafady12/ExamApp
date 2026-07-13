@@ -6,6 +6,16 @@ import notificationService from './services/NotificationService';
 import loggerService from './services/LoggerService';
 import authService from './services/AuthService';
 
+// Utility function to shuffle an array (Fisher-Yates algorithm)
+const shuffleArray = (array) => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
 // Renders the workspace for students to view active assessments and take tests
 function StudentPortal() {
   const [exams, setExams] = useState([]);
@@ -80,7 +90,19 @@ function StudentPortal() {
 
   // Sets up local workspace states to start taking a selected test
   const handleStartExam = (selectedExam) => {
-    setExam(selectedExam);
+    let examToStart = { ...selectedExam };
+    
+    // Randomize questions and options if enabled for this exam
+    if (examToStart.shuffleQuestions && examToStart.questions) {
+      examToStart.questions = shuffleArray(examToStart.questions).map(q => {
+        if (q.type === 'MULTIPLE_CHOICE' && q.options) {
+          return { ...q, options: shuffleArray(q.options) };
+        }
+        return q;
+      });
+    }
+
+    setExam(examToStart);
     setAnswers({});
     setSubmitted(false);
     setError('');
