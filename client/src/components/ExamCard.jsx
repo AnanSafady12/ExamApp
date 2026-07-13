@@ -1,5 +1,5 @@
 // Renders a card displaying exam title, questions count, status toggles, and CRUD buttons for teachers
-function ExamCard({ exam, onViewScores, onEdit, onDelete, onStatusChange, onLiveMonitor, unreadCount }) {
+function ExamCard({ exam, onViewScores, onEdit, onDelete, onStatusChange, onLiveMonitor, onExportCSV, unreadCount }) {
   return (
     <div className="card-premium h-100 d-flex flex-column" style={{ padding: '24px' }}>
       
@@ -35,13 +35,22 @@ function ExamCard({ exam, onViewScores, onEdit, onDelete, onStatusChange, onLive
 
       {/* Interaction buttons for viewing scores, editing, or deleting */}
       <div className="d-flex flex-column gap-2 mt-auto">
-        <button
-          className="btn btn-outline-primary btn-sm w-100 py-2 fw-bold"
-          onClick={() => onViewScores(exam.id)}
-          style={{ borderRadius: '10px', color: 'var(--primary)', borderColor: 'var(--primary-border)', background: 'var(--primary-light)', fontSize: '13px', transition: 'all 0.2s' }}
-        >
-          🔍 View Scores
-        </button>
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-outline-primary btn-sm flex-grow-1 py-2 fw-bold"
+            onClick={() => onViewScores(exam.id)}
+            style={{ borderRadius: '10px', color: 'var(--primary)', borderColor: 'var(--primary-border)', background: 'var(--primary-light)', fontSize: '13px', transition: 'all 0.2s' }}
+          >
+            🔍 View Scores
+          </button>
+          <button
+            className="btn btn-outline-info btn-sm flex-grow-1 py-2 fw-bold"
+            onClick={() => onExportCSV(exam)}
+            style={{ borderRadius: '10px', fontSize: '13px', transition: 'all 0.2s' }}
+          >
+            ⬇️ Export CSV
+          </button>
+        </div>
         
         <div className="d-flex gap-2">
           <button
