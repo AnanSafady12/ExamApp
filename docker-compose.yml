@@ -1,7 +1,21 @@
 version: '3.8'
 
 services:
-  api-server:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: examapp
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  backend:
     build:
       context: ./server
       dockerfile: Dockerfile
@@ -9,21 +23,29 @@ services:
       - "3001:3001"
     environment:
       - PORT=3001
+      - DATABASE_URL=postgresql://postgres:password@db:5432/examapp
+    depends_on:
+      - db
     networks:
       - app-network
     restart: unless-stopped
 
-  notifications-service:
+  frontend:
     build:
-      context: ./notifications-service
+      context: ./client
       dockerfile: Dockerfile
     ports:
-      - "3002:3002"
+      - "5173:5173"
     environment:
-      - PORT=3002
+      - VITE_API_URL=http://localhost:3001
+    depends_on:
+      - backend
     networks:
       - app-network
     restart: unless-stopped
+
+volumes:
+  pgdata:
 
 networks:
   app-network:
