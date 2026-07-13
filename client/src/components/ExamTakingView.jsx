@@ -93,10 +93,21 @@ function ExamTakingView({
             </div>
           ) : (
             <div className="text-end">
-              <span className="fw-bold px-3 py-2 rounded-3" style={{ background: 'var(--primary-light)', color: 'var(--primary)', fontSize: '18px' }}>
-                {scorePercentage}%
-              </span>
-              <div className="small text-muted mt-1 fw-bold text-uppercase" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Final Grade</div>
+              {exam.resultsReleased ? (
+                <>
+                  <span className="fw-bold px-3 py-2 rounded-3" style={{ background: 'var(--primary-light)', color: 'var(--primary)', fontSize: '18px' }}>
+                    {scorePercentage}%
+                  </span>
+                  <div className="small text-muted mt-1 fw-bold text-uppercase" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Final Grade</div>
+                </>
+              ) : (
+                <>
+                  <span className="fw-bold px-3 py-2 rounded-3" style={{ background: 'var(--success)', color: '#fff', fontSize: '15px' }}>
+                    Submitted
+                  </span>
+                  <div className="small text-muted mt-1 fw-bold text-uppercase" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Pending Review</div>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -191,10 +202,21 @@ function ExamTakingView({
                 <div className="p-5 text-center rounded-4 shadow" style={{ background: 'linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%)', color: '#fff' }}>
                   <h2 className="fw-bold mb-2 text-white" style={{ fontFamily: 'var(--heading)' }}>Assessment Completed!</h2>
                   <p className="mb-4 opacity-75" style={{ fontSize: '15px' }}>Great job completing the {exam.title} exam.</p>
-                  <div className="display-2 fw-bold mb-2 text-white">
-                    {score} <span className="fs-3 opacity-70">/ {exam.questions.length}</span>
-                  </div>
-                  <p className="h4 mb-4 text-white" style={{ opacity: 0.9 }}>Your Grade: {scorePercentage}%</p>
+                  
+                  {exam.resultsReleased ? (
+                    <>
+                      <div className="display-2 fw-bold mb-2 text-white">
+                        {score} <span className="fs-3 opacity-70">/ {exam.questions.length}</span>
+                      </div>
+                      <p className="h4 mb-4 text-white" style={{ opacity: 0.9 }}>Your Grade: {scorePercentage}%</p>
+                    </>
+                  ) : (
+                    <div className="py-4">
+                      <p className="h5 mb-2 text-white" style={{ opacity: 0.9 }}>Your answers have been submitted.</p>
+                      <p className="mb-0 text-white opacity-75">Your final grade will be available here once the teacher publishes the results.</p>
+                    </div>
+                  )}
+
                   <div className="d-flex justify-content-center gap-3 mt-4">
                     <button className="btn btn-light rounded-pill px-4 py-2 fw-bold" onClick={onExit} style={{ border: 'none', color: 'var(--primary)', transition: 'all 0.2s' }}>
                       Back to Dashboard
