@@ -66,6 +66,36 @@ function TeacherDashboard() {
     setSelectedExamScores(null);
   };
 
+  const handleExportCSV = async (exam) => {
+    try {
+      notificationService.info(`Generating CSV for ${exam.title}...`);
+      const scores = await getScoresByExam(exam.id);
+      if (!scores || scores.length === 0) {
+        notificationService.warning(`No scores available for ${exam.title} to export.`);
+        return;
+      }
+      
+      const headers = ['Student Name', 'Grade Score'];
+      const csvContent = [
+        headers.join(','),
+        ...scores.map(s => `"${s.studentName}",${s.score}`)
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const safeTitle = exam.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      link.setAttribute('download', `${safeTitle}_grades.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      notificationService.success(`CSV export complete for ${exam.title}.`);
+    } catch (err) {
+      notificationService.error(`Failed to export CSV: ${err.message}`);
+    }
+  };
+
   const handlePublishResults = async (examId) => {
     try {
       await publishResults(examId);
@@ -225,6 +255,7 @@ function TeacherDashboard() {
         onDelete={handleDeleteClick}
         onStatusChange={handleStatusChange}
         onLiveMonitor={handleLiveMonitorClick}
+        onExportCSV={handleExportCSV}
         unreadCounts={unreadCounts}
       />
 

@@ -9,6 +9,26 @@ function ScoreTable({ selectedExamScores, scoresLoading, onClose, activeExam, on
 
   const isPublished = activeExam?.resultsReleased;
 
+  const handleExportCSV = () => {
+    if (!selectedExamScores || !activeExam) return;
+    const scores = selectedExamScores.scores;
+    const headers = ['Student Name', 'Grade Score'];
+    const csvContent = [
+      headers.join(','),
+      ...scores.map(s => `"${s.studentName}",${s.score}`)
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const safeTitle = activeExam.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    link.setAttribute('download', `${safeTitle}_grades.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="card-premium mt-4" style={{ padding: '24px' }}>
       
@@ -31,6 +51,14 @@ function ScoreTable({ selectedExamScores, scoresLoading, onClose, activeExam, on
                 📢 Publish Results
               </button>
             )
+          )}
+          {selectedExamScores?.scores?.length > 0 && (
+            <button
+              className="btn btn-outline-info btn-sm rounded-pill px-3 py-1.5 fw-bold"
+              onClick={handleExportCSV}
+            >
+              ⬇️ Export CSV
+            </button>
           )}
           <button
             className="btn-close"
