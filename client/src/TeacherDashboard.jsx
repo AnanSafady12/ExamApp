@@ -4,8 +4,10 @@ import ExamList from './components/ExamList';
 import ScoreTable from './components/ScoreTable';
 import ExamForm from './components/ExamForm';
 import DeleteExamModal from './components/DeleteExamModal';
+import LiveMonitorModal from './components/LiveMonitorModal';
 import notificationService from './services/NotificationService';
 import loggerService from './services/LoggerService';
+import { useTeacherNotifications } from './hooks/useTeacherNotifications';
 
 // Renders the workspace for teachers to manage exams and view scores
 function TeacherDashboard() {
@@ -16,6 +18,10 @@ function TeacherDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [editingExam, setEditingExam] = useState(null);
   const [deletingExam, setDeletingExam] = useState(null);
+  const [monitoringExam, setMonitoringExam] = useState(null);
+
+  // Activate global chat notifications for this teacher
+  const { unreadCounts } = useTeacherNotifications(exams, monitoringExam?.id);
 
   // Fetch all exams from the mock API and update state
   const fetchExams = async () => {
@@ -89,6 +95,16 @@ function TeacherDashboard() {
   const handleDeleteClick = (exam) => {
     setDeletingExam(exam);
     loggerService.info(`Opened delete confirmation for exam: ${exam.title}`);
+  };
+
+  // Open live monitor for published exam
+  const handleLiveMonitorClick = (exam) => {
+    setMonitoringExam(exam);
+    loggerService.info(`Opened Live Monitor for exam: ${exam.title}`);
+  };
+
+  const handleCloseMonitor = () => {
+    setMonitoringExam(null);
   };
 
   // Handles adding new exams or updating edited ones upon form submission
@@ -193,6 +209,14 @@ function TeacherDashboard() {
         />
       )}
 
+      {/* Render live monitor modal */}
+      {monitoringExam && (
+        <LiveMonitorModal
+          exam={monitoringExam}
+          onClose={handleCloseMonitor}
+        />
+      )}
+
       {/* Grid displaying the list of all exam cards */}
       <ExamList
         exams={exams}
@@ -200,6 +224,8 @@ function TeacherDashboard() {
         onEdit={handleEditClick}
         onDelete={handleDeleteClick}
         onStatusChange={handleStatusChange}
+        onLiveMonitor={handleLiveMonitorClick}
+        unreadCounts={unreadCounts}
       />
 
       {/* Table grid listing student test results summary */}

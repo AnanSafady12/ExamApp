@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import QuestionCard from './QuestionCard';
+import ChatWidget from './ChatWidget';
 
 // Renders the active test-taking UI panel for a student taking a published exam
 function ExamTakingView({
@@ -56,12 +57,6 @@ function ExamTakingView({
   const scorePercentage = exam.questions.length
     ? Math.round((score / exam.questions.length) * 100)
     : 0;
-
-  // Verify all questions have non-empty trimmed answers
-  const hasAnsweredAll = exam.questions.every((q) => {
-    const ans = answers[q.id];
-    return ans !== undefined && ans !== null && String(ans).trim() !== '';
-  });
 
   const today = new Date().toLocaleDateString('en-US', {
     month: 'long',
@@ -128,11 +123,11 @@ function ExamTakingView({
                     <div className="alert alert-danger border-0 py-2 mb-3 text-center" style={{ borderRadius: '12px', background: 'var(--danger-light)', color: 'var(--danger)' }} role="alert">{error}</div>
                   )}
                   
-                  {/* Submit button stays disabled until all questions are answered */}
+                  {/* Submit button stays disabled only if loading */}
                   <button
                     className="btn-primary-custom w-100 fw-bold py-3 fs-5"
                     onClick={onSubmit}
-                    disabled={loading || !hasAnsweredAll}
+                    disabled={loading}
                   >
                     {loading ? (
                       <span
@@ -144,11 +139,6 @@ function ExamTakingView({
                       'Submit Assessment'
                     )}
                   </button>
-                  {!hasAnsweredAll && (
-                    <p className="text-center text-muted small mt-2" style={{ fontSize: '13px' }}>
-                      Please answer all {exam.questions.length} questions to submit.
-                    </p>
-                  )}
                 </div>
               ) : (
                 /* Renders the final grades percentage summaries and correct highlights */
@@ -161,7 +151,7 @@ function ExamTakingView({
                   <p className="h4 mb-4 text-white" style={{ opacity: 0.9 }}>Your Grade: {scorePercentage}%</p>
                   <div className="d-flex justify-content-center gap-3 mt-4">
                     <button className="btn btn-light rounded-pill px-4 py-2 fw-bold" onClick={onExit} style={{ border: 'none', color: 'var(--primary)', transition: 'all 0.2s' }}>
-                      Take Another Exam
+                      Back to Dashboard
                     </button>
                   </div>
                 </div>
@@ -170,6 +160,9 @@ function ExamTakingView({
           </div>
         </div>
       </div>
+      
+      {/* Real-time chat widget */}
+      {!submitted && <ChatWidget examId={exam.id} />}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 // Renders a card displaying exam title, questions count, status toggles, and CRUD buttons for teachers
-function ExamCard({ exam, onViewScores, onEdit, onDelete, onStatusChange }) {
+function ExamCard({ exam, onViewScores, onEdit, onDelete, onStatusChange, onLiveMonitor, unreadCount }) {
   return (
     <div className="card-premium h-100 d-flex flex-column" style={{ padding: '24px' }}>
       
@@ -59,6 +59,21 @@ function ExamCard({ exam, onViewScores, onEdit, onDelete, onStatusChange }) {
             🗑️ Delete
           </button>
         </div>
+        
+        {exam.status === 'published' && (
+          <button
+            className="btn btn-primary btn-sm w-100 py-2 fw-bold mt-1 position-relative"
+            onClick={() => onLiveMonitor(exam)}
+            style={{ borderRadius: '10px', fontSize: '13px', transition: 'all 0.2s' }}
+          >
+            📡 Live Monitor Chat
+            {unreadCount > 0 && (
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
     </div>

@@ -1,7 +1,7 @@
 import ExamCard from './ExamCard';
 
 // Renders a grid list containing individual ExamCard components
-function ExamList({ exams, onViewScores, onEdit, onDelete, onStatusChange }) {
+function ExamList({ exams, onViewScores, onEdit, onDelete, onStatusChange, onLiveMonitor, unreadCounts }) {
   // If the exams list is empty, display a clean fallback placeholder card
   if (exams.length === 0) {
     return (
@@ -23,6 +23,8 @@ function ExamList({ exams, onViewScores, onEdit, onDelete, onStatusChange }) {
             onEdit={onEdit}
             onDelete={onDelete}
             onStatusChange={onStatusChange}
+            onLiveMonitor={onLiveMonitor}
+            unreadCount={unreadCounts?.[exam.id] || 0}
           />
         </div>
       ))}

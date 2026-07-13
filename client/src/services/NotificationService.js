@@ -24,6 +24,8 @@ class NotificationService {
       loggerService.error(message);
     } else if (type === 'WARNING') {
       loggerService.warning(message);
+    } else if (type === 'INFO') {
+      loggerService.info(message);
     }
 
     this.listeners.forEach(listener => listener(notification));
@@ -43,6 +45,11 @@ class NotificationService {
   // Trigger a warning notification
   warning(message) {
     return this._notify('WARNING', message);
+  }
+
+  // Trigger an info notification
+  info(message) {
+    return this._notify('INFO', message);
   }
 
   // Get list of all notifications triggered

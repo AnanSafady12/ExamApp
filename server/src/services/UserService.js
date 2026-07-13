@@ -3,7 +3,7 @@ import pool from '../db/connect.js';
 class UserService {
   async getUserByUsername(username) {
     const result = await pool.query(
-      'SELECT id, username, password, role, name, name AS "fullName" FROM users WHERE username = $1',
+      'SELECT id, username, password, role, name, name AS "fullName" FROM users WHERE LOWER(username) = LOWER($1)',
       [username]
     );
     return result.rows[0];
