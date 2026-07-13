@@ -22,35 +22,38 @@ function StudentPortal() {
   const [examCache, setExamCache] = useState({});
   const [expandedSubmissions, setExpandedSubmissions] = useState({});
 
-  // Fetch only the published exams to prevent students seeing draft/closed ones
-  const fetchPublishedExams = async () => {
+  const loadPortalData = async () => {
     setLoading(true);
     setError('');
+    setHistoryLoading(true);
     try {
-      const allExams = await getAllExams();
-      const publishedExams = allExams.filter((e) => e.status === 'published');
+      const [allExams, studentHistory] = await Promise.all([
+        getAllExams(),
+        getStudentSubmissions()
+      ]);
+
+      setHistory(studentHistory);
+      
+      const takenExamIds = new Set(studentHistory.map(sub => sub.examId));
+      const publishedExams = allExams.filter((e) => e.status === 'published' && !takenExamIds.has(e.id));
       setExams(publishedExams);
     } catch (err) {
-      setError('Failed to fetch exams.');
+      setError('Failed to fetch exams and history.');
     } finally {
       setLoading(false);
+      setHistoryLoading(false);
     }
   };
 
-  // Fetch active published exams when the student portal loads
+  // Fetch data when the student portal loads
   useEffect(() => {
-    fetchPublishedExams();
+    loadPortalData();
   }, []);
 
   const fetchHistory = async () => {
-    setHistoryLoading(true);
-    try {
-      const data = await getStudentSubmissions();
-      setHistory(data);
-    } catch (err) {
-      console.error('Failed to fetch history:', err);
-    } finally {
-      setHistoryLoading(false);
+    // History is now already loaded, but we can keep this for manual refresh if needed
+    if (history.length === 0) {
+      await loadPortalData();
     }
   };
 
@@ -152,22 +155,16 @@ function StudentPortal() {
     setAnswers({});
     setSubmitted(false);
     setError('');
-    fetchPublishedExams();
+    loadPortalData();
   };
 
   return (
     <div className="student-portal animate-in">
-      {/* Header section with page title and exit button */}
+      {/* Header section with page title */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="fw-bold mb-1">🎓 Student Portal</h2>
-          <p className="text-muted mb-0">Welcome to your online assessment center</p>
+          <h2 className="fw-bold mb-0 text-dark">🎓 Student Portal</h2>
         </div>
-        {exam && (
-          <button className="btn btn-outline-secondary btn-sm rounded-pill px-3" onClick={handleExitExam}>
-            Exit Exam
-          </button>
-        )}
       </div>
 
       {/* Navigation tabs */}

@@ -1,4 +1,5 @@
 import ScoreService from '../services/ScoreService.js';
+import { clearStudentChat } from '../services/socketHandler.js';
 
 class ScoreController {
   async submit(req, res) {
@@ -11,6 +12,10 @@ class ScoreController {
       }
 
       const scoreRecord = await ScoreService.saveSubmission(studentId, examId, answers);
+      
+      // Clear the student's chat history from the live monitor
+      clearStudentChat(examId, studentId);
+
       res.status(201).json(scoreRecord);
     } catch (error) {
       console.error('Error in submit controller:', error);
