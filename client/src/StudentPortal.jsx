@@ -42,6 +42,9 @@ function StudentPortal() {
         getStudentSubmissions()
       ]);
 
+      const initialCache = {};
+      allExams.forEach(e => initialCache[e.id] = e);
+      setExamCache(initialCache);
       setHistory(studentHistory);
       
       const takenExamIds = new Set(studentHistory.map(sub => sub.examId));
@@ -253,10 +256,16 @@ function StudentPortal() {
                         <p className="text-muted small mb-0">Submitted on: {sub.date}</p>
                       </div>
                       <div className="d-flex align-items-center gap-3">
-                        <span className="badge bg-primary fs-6 p-2 rounded-3">
-                          Score: {sub.score}%
-                        </span>
-                        {sub.resultsReleased ? (
+                        {examDetails?.resultsReleased ? (
+                          <span className="badge bg-primary fs-6 p-2 rounded-3">
+                            Score: {sub.score}%
+                          </span>
+                        ) : (
+                          <span className="badge bg-secondary fs-6 p-2 rounded-3">
+                            Pending Review
+                          </span>
+                        )}
+                        {examDetails?.resultsReleased ? (
                           <button
                             className="btn btn-outline-primary btn-sm rounded-pill"
                             onClick={() => handleToggleExpand(sub.id, sub.examId)}

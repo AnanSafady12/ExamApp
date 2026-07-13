@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAllExams, getScoresByExam, createExam, updateExam, deleteExam, publishResults } from './api/examService';
 import ExamList from './components/ExamList';
 import ScoreTable from './components/ScoreTable';
@@ -260,15 +260,39 @@ function TeacherDashboard() {
       />
 
       {/* Table grid listing student test results summary */}
-      <ScoreTable
-        selectedExamScores={selectedExamScores}
-        scoresLoading={scoresLoading}
-        onClose={handleCloseScores}
-        activeExam={selectedExamScores ? exams.find((e) => e.id === selectedExamScores.examId) : null}
-        onPublishResults={handlePublishResults}
-      />
+      <ErrorBoundary>
+        <ScoreTable
+          selectedExamScores={selectedExamScores}
+          scoresLoading={scoresLoading}
+          onClose={handleCloseScores}
+          activeExam={selectedExamScores ? exams.find((e) => e.id === selectedExamScores.examId) : null}
+          onPublishResults={handlePublishResults}
+        />
+      </ErrorBoundary>
     </div>
   );
+}
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 bg-danger text-white rounded mt-4">
+          <h4>ScoreTable Crashed!</h4>
+          <pre>{this.state.error?.toString()}</pre>
+          <pre>{this.state.error?.stack}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 export default TeacherDashboard;
