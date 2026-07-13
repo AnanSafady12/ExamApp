@@ -15,6 +15,7 @@ function ExamTakingView({
 }) {
   // Initialize timeLeft using exam.timeLimit (in minutes) converted to seconds. Default to 60 if not provided.
   const [timeLeft, setTimeLeft] = useState((exam.timeLimit || 60) * 60);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   // Timer countdown effect
   useEffect(() => {
@@ -81,11 +82,14 @@ function ExamTakingView({
             </p>
           </div>
           {!submitted ? (
-            <div className="text-end">
-              <span className={`fw-bold px-3 py-2 rounded-3 ${timeLeft < 60 ? 'bg-danger text-white' : ''}`} style={{ background: timeLeft < 60 ? '' : 'var(--primary-light)', color: timeLeft < 60 ? '' : 'var(--primary)', fontSize: '18px', transition: 'all 0.3s' }}>
-                ⏱ {formatTime(timeLeft)}
-              </span>
-              <div className="small text-muted mt-1 fw-bold text-uppercase" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Time Remaining</div>
+            <div className="d-flex align-items-center gap-3">
+              <ChatWidget examId={exam.id} />
+              <div className="text-end">
+                <span className={`fw-bold px-3 py-2 rounded-3 ${timeLeft < 60 ? 'bg-danger text-white' : ''}`} style={{ background: timeLeft < 60 ? '' : 'var(--primary-light)', color: timeLeft < 60 ? '' : 'var(--primary)', fontSize: '18px', transition: 'all 0.3s' }}>
+                  ⏱ {formatTime(timeLeft)}
+                </span>
+                <div className="small text-muted mt-1 fw-bold text-uppercase" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Time Remaining</div>
+              </div>
             </div>
           ) : (
             <div className="text-end">
@@ -98,51 +102,93 @@ function ExamTakingView({
         </div>
 
         <div className="py-4 px-4">
-          <div className="row justify-content-center">
-            <div className="col-lg-10 col-md-11">
-              
-              {/* Map and render each question dynamically as a QuestionCard component */}
-              <div className="d-flex flex-column gap-1">
-                {exam.questions.map((q, idx) => (
-                  <QuestionCard
-                    key={q.id}
-                    question={q}
-                    idx={idx}
-                    answers={answers}
-                    submitted={submitted}
-                    onSelectAnswer={onSelectAnswer}
-                  />
-                ))}
-              </div>
+          {!submitted ? (
+            <div className="row">
+              {/* Sidebar: Navigation and Submit */}
+              <div className="col-md-4 col-lg-3 border-end pe-4 mb-4 mb-md-0">
+                <h5 className="fw-bold mb-3" style={{ color: 'var(--text-h)' }}>Questions</h5>
+                <div className="d-flex flex-wrap gap-2 mb-4">
+                  {exam.questions.map((q, idx) => {
+                    const isAnswered = !!answers[q.id] && answers[q.id].toString().trim() !== '';
+                    const isActive = idx === currentQuestionIndex;
+                    let btnClass = 'btn-outline-secondary';
+                    if (isActive) {
+                      btnClass = 'btn-primary text-white';
+                    } else if (isAnswered) {
+                      btnClass = 'btn-success text-white border-success';
+                    }
+                    
+                    return (
+                      <button
+                        key={q.id}
+                        className={`btn ${btnClass} btn-sm d-flex align-items-center justify-content-center fw-bold`}
+                        style={{ width: '40px', height: '40px', borderRadius: '8px', transition: 'all 0.2s' }}
+                        onClick={() => setCurrentQuestionIndex(idx)}
+                      >
+                        {idx + 1}
+                      </button>
+                    );
+                  })}
+                </div>
 
-              {/* Renders the submission controls if not yet completed */}
-              {!submitted ? (
-                <div className="d-grid gap-2 mt-4">
-                  {/* Displays validation errors if double checks fail */}
+                <div className="d-grid gap-2 mt-auto">
                   {error && (
-                    <div className="alert alert-danger border-0 py-2 mb-3 text-center" style={{ borderRadius: '12px', background: 'var(--danger-light)', color: 'var(--danger)' }} role="alert">{error}</div>
+                    <div className="alert alert-danger border-0 py-2 mb-2 text-center small" style={{ borderRadius: '8px', background: 'var(--danger-light)', color: 'var(--danger)' }} role="alert">
+                      {error}
+                    </div>
                   )}
                   
-                  {/* Submit button stays disabled only if loading */}
                   <button
-                    className="btn-primary-custom w-100 fw-bold py-3 fs-5"
+                    className="btn-primary-custom w-100 fw-bold py-2"
                     onClick={onSubmit}
                     disabled={loading}
+                    style={{ borderRadius: '10px' }}
                   >
                     {loading ? (
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                     ) : (
                       'Submit Assessment'
                     )}
                   </button>
                 </div>
-              ) : (
-                /* Renders the final grades percentage summaries and correct highlights */
-                <div className="p-5 text-center mt-4 rounded-4 shadow" style={{ background: 'linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%)', color: '#fff' }}>
+              </div>
+
+              {/* Main Question Area */}
+              <div className="col-md-8 col-lg-9 ps-md-4">
+                <QuestionCard
+                  question={exam.questions[currentQuestionIndex]}
+                  idx={currentQuestionIndex}
+                  answers={answers}
+                  submitted={submitted}
+                  onSelectAnswer={onSelectAnswer}
+                />
+
+                {/* Next / Previous Controls */}
+                <div className="d-flex gap-3 mt-4">
+                  <button
+                    className="btn btn-primary px-4 py-2 fw-bold flex-grow-1"
+                    style={{ borderRadius: '10px', fontSize: '1.1rem' }}
+                    disabled={currentQuestionIndex === 0}
+                    onClick={() => setCurrentQuestionIndex((prev) => prev - 1)}
+                  >
+                    ← Previous
+                  </button>
+                  <button
+                    className="btn btn-primary px-4 py-2 fw-bold flex-grow-1"
+                    style={{ borderRadius: '10px', fontSize: '1.1rem' }}
+                    disabled={currentQuestionIndex === exam.questions.length - 1}
+                    onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Renders the final grades percentage summaries and correct highlights */
+            <div className="row justify-content-center">
+              <div className="col-lg-8 col-md-10">
+                <div className="p-5 text-center rounded-4 shadow" style={{ background: 'linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%)', color: '#fff' }}>
                   <h2 className="fw-bold mb-2 text-white" style={{ fontFamily: 'var(--heading)' }}>Assessment Completed!</h2>
                   <p className="mb-4 opacity-75" style={{ fontSize: '15px' }}>Great job completing the {exam.title} exam.</p>
                   <div className="display-2 fw-bold mb-2 text-white">
@@ -155,14 +201,11 @@ function ExamTakingView({
                     </button>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
-      
-      {/* Real-time chat widget */}
-      {!submitted && <ChatWidget examId={exam.id} />}
     </div>
   );
 }
