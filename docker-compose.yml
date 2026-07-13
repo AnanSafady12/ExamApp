@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  api-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  notifications-service:
+    build:
+      context: ./notifications-service
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
