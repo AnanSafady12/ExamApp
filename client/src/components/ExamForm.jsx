@@ -13,6 +13,7 @@ const EMPTY_QUESTION = () => ({
 function ExamForm({ exam, onSubmit, onCancel }) {
   const [title, setTitle] = useState('');
   const [timeLimit, setTimeLimit] = useState(60);
+  const [shuffleQuestions, setShuffleQuestions] = useState(false);
   const [questions, setQuestions] = useState([EMPTY_QUESTION()]);
   const [errors, setErrors] = useState({});
 
@@ -23,6 +24,7 @@ function ExamForm({ exam, onSubmit, onCancel }) {
     if (exam) {
       setTitle(exam.title);
       setTimeLimit(exam.timeLimit || 60);
+      setShuffleQuestions(exam.shuffleQuestions || false);
       setQuestions(
         exam.questions.map((q) => ({
           id: q.id,
@@ -57,11 +59,10 @@ function ExamForm({ exam, onSubmit, onCancel }) {
       }
       
       if (q.type === 'MULTIPLE_CHOICE') {
-        q.options.forEach((opt, j) => {
-          if (!opt.trim()) {
-            newErrors[`q_${i}_opt_${j}`] = `Question ${i + 1}, option ${j + 1} is required`;
-          }
-        });
+        const filledOptions = q.options.filter(opt => opt.trim() !== '');
+        if (filledOptions.length < 2) {
+          newErrors[`q_${i}_options`] = `Question ${i + 1} must have at least 2 options`;
+        }
       }
       
       if (!q.correctAnswer || !q.correctAnswer.trim()) {
@@ -81,11 +82,12 @@ function ExamForm({ exam, onSubmit, onCancel }) {
     onSubmit({
       title: title.trim(),
       timeLimit: Number(timeLimit),
+      shuffleQuestions,
       questions: questions.map((q) => ({
         id: q.id,
         type: q.type,
         text: q.text.trim(),
-        options: q.options.map((o) => o.trim()),
+        options: q.options.filter((o) => o.trim() !== '').map((o) => o.trim()),
         correctAnswer: q.correctAnswer.trim(),
       })),
     });
@@ -174,6 +176,29 @@ function ExamForm({ exam, onSubmit, onCancel }) {
           {errors.timeLimit && <div className="invalid-feedback">{errors.timeLimit}</div>}
         </div>
 
+        {/* Randomization Toggle */}
+        <div className="mb-4">
+          <div className="form-check form-switch p-4 border rounded-4 d-flex align-items-center justify-content-between" style={{ background: 'var(--primary-light)', borderColor: 'var(--primary-border)' }}>
+            <div>
+              <label className="form-check-label fw-bold mb-1" htmlFor="shuffleQuestionsToggle" style={{ color: 'var(--primary)', fontSize: '1.1rem' }}>
+                🔀 Randomize Questions & Options
+              </label>
+              <div className="small text-muted">
+                Display questions and their multiple-choice options in a random order for each student.
+              </div>
+            </div>
+            <input
+              className="form-check-input"
+              type="checkbox"
+              role="switch"
+              id="shuffleQuestionsToggle"
+              checked={shuffleQuestions}
+              onChange={(e) => setShuffleQuestions(e.target.checked)}
+              style={{ width: '3em', height: '1.5em', cursor: 'pointer' }}
+            />
+          </div>
+        </div>
+
         {/* Validation warnings alerts */}
         {errors.questions && (
           <div className="alert alert-danger border-0" style={{ borderRadius: '12px', background: 'var(--danger-light)', color: 'var(--danger)' }}>
@@ -249,8 +274,8 @@ function ExamForm({ exam, onSubmit, onCancel }) {
                           </span>
                           <input
                             type="text"
-                            className={`form-control ${errors[`q_${qIndex}_opt_${oIndex}`] ? 'is-invalid' : ''}`}
-                            placeholder={`Option ${oIndex + 1}`}
+                            className="form-control"
+                            placeholder={`Option ${oIndex + 1} ${oIndex >= 2 ? '(Optional)' : ''}`}
                             value={opt}
                             onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
                             style={{ borderRadius: '0 10px 10px 0', border: '1.5px solid var(--border)', background: 'var(--bg-card)' }}
@@ -259,6 +284,9 @@ function ExamForm({ exam, onSubmit, onCancel }) {
                       </div>
                     ))}
                   </div>
+                  {errors[`q_${qIndex}_options`] && (
+                    <div className="invalid-feedback d-block mb-3 fw-bold">{errors[`q_${qIndex}_options`]}</div>
+                  )}
 
                   <div>
                     <label className="form-label fw-bold small text-uppercase" style={{ color: 'var(--text-muted)', fontSize: '11px', letterSpacing: '0.05em' }}>

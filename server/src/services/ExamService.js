@@ -3,26 +3,27 @@ import pool from '../db/connect.js';
 class ExamService {
   async getAllExams() {
     const result = await pool.query(
-      'SELECT id, title, time_limit AS "timeLimit", passing_grade AS "passingGrade", questions, status, results_released AS "resultsReleased" FROM exams ORDER BY created_at DESC'
+      'SELECT id, title, time_limit AS "timeLimit", passing_grade AS "passingGrade", shuffle_questions AS "shuffleQuestions", questions, status, results_released AS "resultsReleased" FROM exams ORDER BY created_at DESC'
     );
     return result.rows;
   }
 
   async getExamById(id) {
     const result = await pool.query(
-      'SELECT id, title, time_limit AS "timeLimit", passing_grade AS "passingGrade", questions, status, results_released AS "resultsReleased" FROM exams WHERE id = $1',
+      'SELECT id, title, time_limit AS "timeLimit", passing_grade AS "passingGrade", shuffle_questions AS "shuffleQuestions", questions, status, results_released AS "resultsReleased" FROM exams WHERE id = $1',
       [id]
     );
     return result.rows[0];
   }
 
-  async createExam({ title, timeLimit, passingGrade, questions, status }) {
+  async createExam({ title, timeLimit, passingGrade, shuffleQuestions, questions, status }) {
     const result = await pool.query(
-      'INSERT INTO exams (title, time_limit, passing_grade, questions, status) VALUES ($1, $2, $3, $4, $5) RETURNING id, title, time_limit AS "timeLimit", passing_grade AS "passingGrade", questions, status, results_released AS "resultsReleased"',
+      'INSERT INTO exams (title, time_limit, passing_grade, shuffle_questions, questions, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, title, time_limit AS "timeLimit", passing_grade AS "passingGrade", shuffle_questions AS "shuffleQuestions", questions, status, results_released AS "resultsReleased"',
       [
         title,
         timeLimit || 60,
         passingGrade || 60,
+        shuffleQuestions || false,
         JSON.stringify(questions || []),
         status || 'draft'
       ]
@@ -47,6 +48,10 @@ class ExamService {
       fields.push(`passing_grade = $${idx++}`);
       values.push(updates.passingGrade);
     }
+    if (updates.shuffleQuestions !== undefined) {
+      fields.push(`shuffle_questions = $${idx++}`);
+      values.push(updates.shuffleQuestions);
+    }
     if (updates.questions !== undefined) {
       fields.push(`questions = $${idx++}`);
       values.push(JSON.stringify(updates.questions));
@@ -69,7 +74,7 @@ class ExamService {
       UPDATE exams 
       SET ${fields.join(', ')} 
       WHERE id = $${idx} 
-      RETURNING id, title, time_limit AS "timeLimit", passing_grade AS "passingGrade", questions, status, results_released AS "resultsReleased"
+      RETURNING id, title, time_limit AS "timeLimit", passing_grade AS "passingGrade", shuffle_questions AS "shuffleQuestions", questions, status, results_released AS "resultsReleased"
     `;
     const result = await pool.query(query, values);
     return result.rows[0];

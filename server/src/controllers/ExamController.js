@@ -27,7 +27,7 @@ class ExamController {
 
   async createExam(req, res) {
     try {
-      const { title, timeLimit, passingGrade, questions, status } = req.body;
+      const { title, timeLimit, passingGrade, shuffleQuestions, questions, status } = req.body;
       if (!title) {
         return res.status(400).json({ error: 'Exam title is required' });
       }
@@ -36,6 +36,7 @@ class ExamController {
         title,
         timeLimit,
         passingGrade,
+        shuffleQuestions,
         questions,
         status
       });
