@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import notificationService from '../services/NotificationService';
 import authService from '../services/AuthService';
+import configurationService from '../services/ConfigurationService';
 
-const SOCKET_SERVER_URL = 'http://localhost:3001';
+const SOCKET_SERVER_URL = configurationService.get('serverUrl') || 'http://localhost:3001';
 
 export const useTeacherNotifications = (exams, monitoringExamId) => {
   const socketRef = useRef(null);
