@@ -1,387 +1,615 @@
+EXAMAPP — FULL PROJECT FEATURE DOCUMENTATION
+============================================
+Last Updated: July 2026
+Version: Production (Full-Stack with Docker Compose)
+
+
 PROJECT GOAL
 ============
-ExamApp is an online examination system built with React.
-Teachers create and manage exams, students take exams and receive instant grading.
-The project uses a mock API layer to simulate a backend server, making it ready for future migration to a real Node.js backend.
+ExamApp is a full-stack online examination platform built for university-level course assessment management.
+
+Teachers create and manage exams, monitor live student activity, publish results, and review grades.
+Students register, browse published exams, take timed assessments, and view their graded results.
+
+The project runs as three containerized services via Docker Compose:
+  - A React + Vite frontend application (port 5173)
+  - A Node.js + Express REST API backend (port 3001)
+  - A PostgreSQL 15 relational database (port 5432)
 
 
 USERS
 =====
 1. Teacher
-   - Creates, edits, and deletes exams
-   - Views student scores per exam
-   - Controls exam status (draft, published, closed)
+   - Creates, edits, and deletes exams with full question management
+   - Sets exam status (draft, published, closed)
+   - Monitors live active students during published exams (via WebSockets)
+   - Live chat with individual students or all students during an exam
+   - Views all student submissions and scores per exam
+   - Publishes results to release grades to students
+   - Exports exam scores as CSV files
 
 2. Student
-   - Browses available exams
-   - Takes multiple-choice exams
-   - Receives instant score and answer review after submission
+   - Registers and logs into the platform
+   - Views a filtered list of all published exams
+   - Takes timed multiple-choice exams with per-question navigation
+   - Submits answers and receives instant auto-graded score
+   - Views published results (only after the teacher releases them)
+   - Chats with the teacher during a live exam session
 
 
-PAGES & ROUTING
-===============
-The application utilizes React Router (HashRouter) to manage client-side routing, navigation menus, and protected role-based workspaces. Using HashRouter ensures robust support on static hostings like GitHub Pages by preventing deep reload 404 errors.
+TECH STACK
+==========
+Frontend:
+  - React 19 + Vite (JavaScript)
+  - React Router 6 (HashRouter for SPA routing)
+  - Bootstrap 5.3 (UI layout and components)
+  - Vanilla CSS (custom design tokens and theme system)
+  - Socket.io-client (real-time WebSocket communication)
+  - Recharts (score distribution charts for teachers)
+  - Vitest + jsdom (47 automated tests)
 
-1. Home / Root Route (/)
-   - Renders the HomeRedirect controller.
-   - Evaluates the user's active session and instantly redirects them to the appropriate workspace:
-     * Unauthenticated -> /login
-     * TEACHER -> /teacher
-     * STUDENT -> /student
+Backend:
+  - Node.js + Express (REST API server)
+  - Socket.io (WebSocket server for real-time events)
+  - pg (node-postgres driver for direct SQL queries)
+  - bcryptjs (password hashing)
+  - jsonwebtoken (JWT-based stateless authentication)
 
-2. Login Page (/login)
-   - Username and password fields.
-   - Redirects to root (/) if the user is already authenticated.
-   - Displays demo accounts for quick testing.
-   - Contains navigation Links to /register.
+Database:
+  - PostgreSQL 15 (relational, persistent storage)
+  - Schema managed via raw SQL (schema.sql)
+  - Seeded with default user accounts and exams (seed.js)
 
-3. Register Page (/register)
-   - Inputs: Full name, username, password, role selector (Student/Teacher).
-   - Validates fields and checks for duplicate usernames.
-   - Redirects to root (/) if the user is already authenticated.
-   - Contains navigation Links to /login.
-
-4. Teacher Dashboard (/teacher) [PROTECTED]
-   - Access limited to authenticated users with the TEACHER role.
-   - Reusable components make it easy to inspect and manage data layouts:
-     * ExamList: Grid that iterates and renders individual ExamCards.
-     * ExamCard: Styled panel showing exam name, total question counts, and a status tag ('published' or 'draft'). Includes button to trigger scores lookup.
-     * ScoreTable: Data grid representing student grades for the active exam with loaded indicators and clear close actions.
-   - Real-time success and failure alert reports using NotificationService.
-
-5. Student Portal (/student) [PROTECTED]
-   - Access limited to authenticated users with the STUDENT role.
-   - Automatically fetches all available exams on load using examService.getAllExams().
-   - Filters out non-published exams (drafts and closed exams are completely hidden).
-   - Renders modular sub-components:
-     * StudentExamList: Displays a grid/list of published exams with start buttons.
-     * ExamTakingView: Standardized layout showing active questions, remaining choices, and submit/results cards.
-     * QuestionCard: Modular multiple-choice question layout showing option actions, selections, and correct/incorrect results highlight blocks.
-
-6. Services Sandbox Page (/sandbox) [PROTECTED]
-   - Access limited to authenticated logged-in users.
-   - Test bench for StorageService, NotificationService, LoggerService, and ConfigurationService.
+Infrastructure:
+  - Docker Compose (3-service containerized deployment)
+  - Docker Bridge Network (isolated container networking)
+  - Persistent named volume for PostgreSQL data (pgdata)
 
 
-PROTECTED ROUTES
+FOLDER STRUCTURE
 ================
-A custom React router component, ProtectedRoute (ProtectedRoute.jsx), secures specific endpoints:
-1. User Authentication Check:
-   - Reads the active user token from StorageService.
-   - If no session exists, the component overrides the request and redirects the user to /login.
-2. User Role Authorization Check:
-   - If an allowedRole attribute is provided (e.g. TEACHER or STUDENT), the component verifies if the user's role matches.
-   - If the role does not match, the user is redirected to their appropriate home page (e.g., a student trying to access /teacher is rerouted to /student).
+ExamApp/
+  docker-compose.yml        - Multi-container orchestration config
+  SPEC.md                   - Project technical specification
+  FEATURES_EXPLANATION.txt  - Full project feature documentation (this file)
+  README.md                 - Project overview
+
+  server/
+    Dockerfile              - Backend container build instructions
+    .env                    - Environment variables (PORT, DATABASE_URL, JWT_SECRET)
+    .env.example            - Example .env template for documentation
+    src/
+      index.js              - Express server entry point; HTTP + WebSocket initialization
+      db/
+        schema.sql          - PostgreSQL table definitions (users, exams, submissions)
+        seed.js             - Seed script for default teacher/student accounts and exams
+        connect.js          - PostgreSQL connection pool (pg.Pool)
+      routes/
+        userRoutes.js       - Auth endpoints: POST /api/users/register, /api/users/login, GET /api/users/by-username/:username
+        examRoutes.js       - Exam CRUD: GET, POST, PUT, DELETE /api/exams, POST /api/exams/:id/publish-results
+        scoreRoutes.js      - Score endpoints: GET /api/scores/:examId, POST /api/scores
+      controllers/
+        UserController.js   - Handles registration, login (JWT signing), and username lookup
+        ExamController.js   - Handles exam create/read/update/delete and result publication
+        ScoreController.js  - Handles score storage and per-exam retrieval
+      services/
+        UserService.js      - User DB query helpers (bcrypt hashing, lookup)
+        ExamService.js      - Exam and question DB query helpers
+        ScoreService.js     - Submission DB query helpers, score calculations
+        socketHandler.js    - Socket.io event registry (chat, student_progress, history)
+      middlewares/
+        authMiddleware.js   - JWT token verification middleware (authenticateToken)
+
+  client/
+    Dockerfile              - Frontend container build instructions
+    index.html              - Root HTML template
+    vite.config.js          - Vite build configuration
+    src/
+      main.jsx              - React entry point; mounts <App /> to DOM
+      App.jsx               - Root application: routing setup, auth state, theme management
+      App.css               - Design utilities, password wrapper, strength bar, table styles
+      index.css             - Global CSS custom properties (design tokens) for Light/Dark themes
+
+      pages/                - Full-page view components (one per route)
+        LoginPage.jsx       - Username + password form with show/hide toggle
+        RegisterPage.jsx    - Registration form: strength meter, confirm match, username check
+        TeacherDashboard.jsx- Teacher workspace: orchestrates exam CRUD, score view, live monitor
+        StudentPortal.jsx   - Student workspace: exam list, taking view, result review
+        SandboxPage.jsx     - Interactive test bench for all generic services
+
+      components/           - Reusable view sub-components
+        ExamList.jsx        - Premium table layout listing all exams with inline status control
+        ExamForm.jsx        - Create/edit form for exam title, time limit, and questions
+        ExamCard.jsx        - Legacy card view (used in some sub-layouts)
+        ExamTakingView.jsx  - Active quiz interface: timer, questions, progress, submit
+        QuestionCard.jsx    - Single multiple-choice question with option selection/feedback
+        StudentExamList.jsx - Grid of published exams with start buttons for students
+        ScoreTable.jsx      - Score results grid with chart visualization and CSV export
+        ChatWidget.jsx      - In-exam real-time chat widget for students
+        NavigationMenu.jsx  - Global navbar with role-aware links and theme toggle
+        ProtectedRoute.jsx  - Route guard: verifies auth + role, redirects if not matching
+        HomeRedirect.jsx    - Redirects user to correct workspace based on their role
+
+        modals/             - Overlay dialog components
+          DeleteExamModal.jsx   - Confirmation modal before exam deletion
+          LiveMonitorModal.jsx  - Split-pane teacher monitor: chat + live student activity
+
+      api/                  - HTTP service wrappers (talk to the Express REST API)
+        examService.js      - getAllExams, getExamById, createExam, updateExam, deleteExam, saveScore, getScoresByExam, publishResults
+        userService.js      - findUserByCredentials, findUserByUsername, createUser
+        mockDb.js           - Legacy in-memory fallback data store (no longer primary)
+
+      hooks/                - Custom React hooks
+        useChat.js          - Socket.io connection manager for real-time exam chat + progress
+        useTeacherNotifications.js - Background socket listener for unread message badges
+
+      services/             - OOP utility service classes
+        AuthService.js      - Login, register, logout, getCurrentUser, role check helpers
+        StorageService.js   - localStorage wrapper with prefix namespacing + JSON support
+        NotificationService.js - Alert event publisher and history tracker (subscribe/unsubscribe)
+        LoggerService.js    - FIFO in-memory application logger (capped at 10 entries)
+        ConfigurationService.js - Runtime key-value configuration engine
+
+      __tests__/            - Vitest automated test suite (47 tests)
+        AuthService.test.js           - Login/register/logout/role check unit tests
+        GenericServices.test.js       - StorageService, LoggerService, NotificationService, ConfigurationService
+        NavigationAndRouting.test.jsx - ProtectedRoute and NavigationMenu rendering tests
+        TeacherDashboard.test.jsx     - Teacher exam list, scores fetch, notification tests
+        ExamCrud.test.jsx             - Create, edit, delete exam service call tests
+        ExamStatus.test.jsx           - Status change, student visibility, closed exam block tests
+        StudentExamList.test.jsx      - Student exam list, start exam, question render, submit tests
 
 
-NAVIGATION MENU (NavigationMenu.jsx)
-====================================
-The NavigationMenu component acts as the global client-side navigation menu rendered dynamically once a user session is active.
-- Features:
-  * Brand Link: Points back to root (/).
-  * Context-Sensitive Navigation Links:
-    - Renders the "👨‍🏫 Teacher Dashboard" button ONLY if the user has the TEACHER role.
-    - Renders the "🎓 Student Portal" button ONLY if the user has the STUDENT role.
-    - Renders the "🛠️ Services Sandbox" link to all authenticated users.
-  * Status Indicators: Displays the active user's full name and role badge clearly.
-  * Logout Button: Clears local storage session via AuthService, updates state, and routes the user back to /login.
+DATABASE SCHEMA
+===============
+Three PostgreSQL tables managed via raw SQL:
+
+1. users
+   - id: UUID (primary key, auto-generated)
+   - username: VARCHAR(255) UNIQUE NOT NULL
+   - password: VARCHAR(255) NOT NULL (bcrypt hashed)
+   - role: VARCHAR(50) CHECK ('TEACHER' | 'STUDENT') NOT NULL
+   - name: VARCHAR(255) NOT NULL
+   - created_at: TIMESTAMP
+
+2. exams
+   - id: UUID (primary key, auto-generated)
+   - title: VARCHAR(255) NOT NULL
+   - time_limit: INTEGER DEFAULT 60 (in minutes)
+   - passing_grade: INTEGER DEFAULT 60 (percentage threshold)
+   - shuffle_questions: BOOLEAN DEFAULT FALSE
+   - questions: JSONB NOT NULL (array of { id, text, options[], correctAnswer, type })
+   - status: VARCHAR(50) CHECK ('draft' | 'published' | 'closed') DEFAULT 'draft'
+   - results_released: BOOLEAN DEFAULT FALSE
+   - created_at: TIMESTAMP
+
+3. submissions
+   - id: UUID (primary key, auto-generated)
+   - exam_id: UUID FOREIGN KEY -> exams(id) ON DELETE CASCADE
+   - student_id: UUID FOREIGN KEY -> users(id) ON DELETE CASCADE
+   - score: INTEGER NOT NULL (percentage, 0-100)
+   - answers: JSONB NOT NULL (object mapping questionId -> studentAnswer)
+   - submitted_at: TIMESTAMP
+
+
+REST API ENDPOINTS
+==================
+All endpoints below (except auth) require a valid JWT Bearer token in the Authorization header.
+
+Authentication:
+  POST   /api/users/register          Register a new user account (name, username, password, role)
+  POST   /api/users/login             Log in and receive a JWT token
+  GET    /api/users/by-username/:u    Check if a username is already taken (real-time availability)
+
+Exams (all users):
+  GET    /api/exams                   Get all exams (students see only 'published'; teachers see all)
+  GET    /api/exams/:id               Get a single exam by ID including questions
+
+Exams (Teacher only):
+  POST   /api/exams                   Create a new exam with title, time limit, and questions
+  PUT    /api/exams/:id               Update exam title, status, questions, or configuration
+  DELETE /api/exams/:id               Delete an exam and all its submissions (CASCADE)
+  POST   /api/exams/:id/publish-results  Release grades to students for a specific exam
+
+Scores:
+  GET    /api/scores/:examId          Get all student submission records for an exam (teacher only)
+  POST   /api/scores                  Submit a new score record on exam completion (students)
 
 
 AUTH FLOW
 =========
-1. User opens the app
-2. App initializes the HashRouter and reads active sessions from localStorage.
-3. If unauthenticated, all attempts to hit protected endpoints (/teacher, /student, /sandbox) are blocked and redirected to /login.
-4. User logs in or registers. The session is serialized into localStorage under the "examapp_current_user" key.
-5. React state is updated, rendering the NavigationMenu.
-6. The user is redirected to the home route (/), which resolves to /teacher or /student depending on their role.
+1. User visits the app — React reads localStorage for an active session token.
+2. If no session exists, all protected routes (/teacher, /student, /sandbox) redirect to /login.
+3. User logs in via POST /api/users/login:
+   - Server verifies username + bcrypt hashed password against PostgreSQL.
+   - On success, the server signs and returns a JWT (payload: id, role, name).
+4. The client stores the JWT and user info in localStorage via StorageService.
+5. React state is updated — the NavigationMenu is rendered.
+6. HomeRedirect routes the user to /teacher or /student based on their role.
+7. All subsequent API calls attach the JWT in the Authorization header.
+8. The server middleware (authMiddleware.js) verifies the JWT on every protected request.
+9. Teacher-only endpoints additionally check req.user.role === 'TEACHER', returning 403 if not.
+
+
+PAGES & ROUTING
+===============
+All routes are managed under HashRouter to prevent reload 404s in Docker/static environments.
+
+1. / (Root)
+   - Renders HomeRedirect
+   - Evaluates current session and redirects:
+     * No session -> /login
+     * TEACHER -> /teacher
+     * STUDENT -> /student
+
+2. /login
+   - Username + password fields
+   - Show/hide password toggle (SVG eye icon)
+   - Error alerts for invalid credentials
+   - Link to /register
+
+3. /register
+   - Inputs: Full name, username, password, confirm password, role selector
+   - Real-time password strength meter (Weak/Medium/Strong evaluation bar)
+   - Confirm password mismatch detection
+   - Show/hide password toggles on both password fields
+   - Real-time username availability check (debounced 400ms against GET /api/users/by-username)
+   - Redirects to root if already authenticated
+
+4. /teacher [PROTECTED — TEACHER only]
+   - Teacher Dashboard workspace
+   - Displays premium table-layout exam list with inline status dropdowns
+   - "Create Exam" form, edit/delete flows
+   - Score table with Recharts grade distribution chart and CSV export
+   - Live Monitor modal (WebSocket powered)
+   - Background socket listener with unread message badge counters
+
+5. /student [PROTECTED — STUDENT only]
+   - Student portal workspace
+   - Lists only published exams
+   - Exam taking view with timer countdown, question navigation, and progress
+   - Auto-graded results with correct/incorrect highlights after submission
+
+6. /sandbox [PROTECTED — any authenticated user]
+   - Test panel for manually validating all four generic OOP services
+   - Real-time log and notification display
+
+7. * (Wildcard) -> redirects to /
 
 
 TEACHER DASHBOARD DATA FLOW
-===========================
-1. Mount Trigger:
-   - When hitting /teacher, TeacherDashboard component mounts.
-   - Triggering a call to examService.getAllExams() (simulating a network fetch delay).
-2. UI Card Binding:
-   - On successful fetch, the array is saved to the local `exams` state and passed down to ExamList.
-   - ExamList maps over the array and renders an ExamCard for each.
-   - NotificationService logs a success trigger, visible under Services Sandbox logs.
-3. Scores Retrieval:
-   - Clicking "View Scores" on a card calls getScoresByExam(examId) with the selected id.
-   - ScoreTable shows a loader spinner.
-   - On response, state is updated with the student grades array, and the loader switches to a standard table display.
-   - NotificationService tracks successful retrievals and prints them to sandbox logs.
-4. Exception Handling:
-   - If any API promise fails (e.g., mockDB network error), a catch handler triggers NotificationService.error() which renders visual toast blocks and schedules log outputs.
+============================
+1. Mount:
+   - TeacherDashboard mounts and calls getAllExams() (HTTP GET /api/exams).
+   - Results are rendered in ExamList.jsx as a styled data table.
+   - useTeacherNotifications hook connects a background Socket.io client to all published exam rooms, listening for incoming student messages and tracking unread counts.
+
+2. Exam CRUD:
+   Create:
+     - Teacher clicks "+ Create New Exam", ExamForm mounts in create mode.
+     - Inputs: exam title, time limit (minutes), passing grade (%), shuffle toggle.
+     - Questions added dynamically: each question needs text, 4 options, and a selected correct answer.
+     - Client-side validation ensures no empty fields before submitting.
+     - On submit: POST /api/exams — server saves to PostgreSQL and returns the new exam.
+
+   Edit:
+     - Teacher clicks "Edit" on a row, ExamForm mounts in edit mode with pre-filled data.
+     - On submit: PUT /api/exams/:id — server updates the record and returns the updated exam.
+
+   Delete:
+     - Teacher clicks "Delete", DeleteExamModal confirmation overlay appears.
+     - On confirm: DELETE /api/exams/:id — server removes exam and cascades all submissions.
+
+3. Status Management:
+   - Inline status dropdown per exam row (Draft / Published / Closed).
+   - Changing calls PUT /api/exams/:id with { status: newStatus }.
+   - Only 'published' exams are visible to students.
+   - Closed exams: students cannot start them; mid-exam submissions are blocked.
+
+4. Scores & Results:
+   - Teacher clicks "View Scores" — ScoreTable mounts, calling GET /api/scores/:examId.
+   - Table shows: student name, score percentage, pass/fail badge, and submission timestamp.
+   - Recharts bar chart visualizes score distribution in grade ranges.
+   - "Export CSV" downloads all scores as a comma-separated file.
+   - "Publish Results" calls POST /api/exams/:id/publish-results — sets results_released=true in the DB, making scores visible to students.
+
+5. Live Monitor (WebSocket):
+   - Clicking "📡 Live Monitor" on a published exam opens LiveMonitorModal.
+   - Modal layout: Chat Support Panel (left) | Live Student Activity Board (right).
+   - Chat Panel: real-time bidirectional messages. Teacher can message "Broadcast to All" or target individual students.
+   - Activity Board: live-updating list of all students currently in the exam showing:
+       * Connection status: 🟢 Online (heartbeat < 10s old) or ⚪ Offline.
+       * Current question number (e.g. "Question 3/10").
+       * Time remaining formatted as MM:SS.
+       * Visual progress bar (percentage complete).
+       * ⚠️ Warning count badge (red) if student has triggered tab-switch violations.
+   - Student card border turns alert red when warnings > 0.
 
 
-TEACHER EXAM CRUD MANAGEMENT FLOW
-=================================
-1. Create Flow:
-   - Teacher clicks "+ Create New Exam" on the Teacher Dashboard.
-   - The ExamForm component mounts in creation mode.
-   - The teacher enters an exam title and adds/modifies questions (each with text, 4 options, and a correct answer selection).
-   - Upon submitting, validation is performed: checking that the title is not empty, and all questions have text, options, and a selected correct answer.
-   - Once validated, createExam(payload) from examService is called.
-   - The new exam is stored in the mock database (mockDb.js) in the `exams` array with a generated auto-incrementing ID.
-   - On success, the UI refreshes the exam list, displays a success toast via NotificationService, and logs the success in LoggerService.
+STUDENT PORTAL DATA FLOW
+=========================
+1. Exam List:
+   - On mount, StudentPortal calls getAllExams() (GET /api/exams).
+   - Server returns only 'published' exams for STUDENT role.
+   - StudentExamList renders a card grid of available exams with title, question count, and time limit.
 
-2. Edit Flow:
-   - Teacher clicks the "✏️ Edit" button on any ExamCard.
-   - The ExamForm component mounts in edit mode, populated with the selected exam's current title and questions.
-   - The teacher modifies the title or questions and submits.
-   - After validation, updateExam(id, updates) from examService is called.
-   - The mock database is updated with the modified exam object.
-   - On success, the UI refreshes, notifies the user via NotificationService, and logs the action in LoggerService.
+2. Taking an Exam:
+   - Clicking "Start Exam" mounts ExamTakingView with the selected exam data.
+   - Questions are optionally shuffled (Fisher-Yates algorithm) based on exam configuration.
+   - Features:
+       * Countdown timer (timeLimit minutes converted to seconds, displayed as MM:SS).
+       * Per-question navigation using previous/next buttons and direct question index selectors.
+       * Answers saved in local state as student navigates.
+       * Submit button is disabled until every question has been answered.
+       * Auto-submit triggers when timer reaches zero.
+       * ChatWidget mounted for real-time chat with the teacher during the exam.
+       * Anti-cheating: Browser visibility and window focus listeners raise a warning modal if the student switches tabs or windows. Warning count increments and is reported to the teacher's live activity board in real time via WebSocket.
+       * Grace period: violations within the first 1.5 seconds of mounting are ignored to prevent false positives on page load.
 
-3. Delete Flow:
-   - Teacher clicks the "🗑️ Delete" button on an ExamCard.
-   - The DeleteExamModal confirmation dialog is displayed, showing the exam title.
-   - The teacher confirms deletion.
-   - deleteExam(id) from examService is called.
-   - The exam is spliced and removed from the `exams` array in the mock database.
-   - On success, the exam card is removed from the UI, a success notification is shown, and the action is logged in LoggerService.
+3. Submission:
+   - On submit, the portal re-fetches the exam via GET /api/exams/:id to validate it is still published.
+   - If the exam was closed mid-session, submission is blocked with an error.
+   - Score calculated: (correct answers / total questions) * 100.
+   - POST /api/scores — score record saved to PostgreSQL with answers JSONB and percentage.
+   - After submission, QuestionCards display correct/incorrect highlights for review.
 
-4. Data Structure of Exam:
-   - Each exam object has the following shape:
-     {
-       id: number,
-       title: string,
-       status: string (e.g. 'draft', 'published'),
-       questions: Array<{
-         id: string,
-         text: string,
-         options: Array<string>,
-         correctAnswer: string
-       }>
-     }
-
-5. Service Functions Used:
-   - examService.createExam(exam)
-   - examService.updateExam(id, updates)
-   - examService.deleteExam(id)
-   - examService.getAllExams() (to refresh the dashboard exam list)
-
-6. Mock DB Storage:
-   - The data is kept in-memory in the `exams` array exported by `api/mockDb.js`.
+4. Viewing Results:
+   - Once results are released by the teacher, students can view their score from the portal.
 
 
-EXAM STATUS MANAGEMENT
-======================
-1. Status Rules:
-   - draft: Newly created or inactive exams. Visible ONLY to teachers on their dashboard. Hidden entirely from students.
-   - published: Active exams. Visible to both teachers and students. Students can search for and take published exams.
-   - closed: Ended exams. Visible on the teacher dashboard. Cannot be started or submitted by students.
+REAL-TIME WEBSOCKET SYSTEM (Socket.io)
+=======================================
+The WebSocket layer enables bi-directional real-time communication between students, teachers, and the server during live exams.
 
-2. Teacher Flow:
-   - Teachers can toggle/change the status of any exam card using an interactive dropdown selection (combobox) in the card's header.
-   - Changing status calls updateExam(examId, { status: newStatus }) via examService.
-   - It notifies the teacher of a successful state transition via NotificationService and logs the change via LoggerService.
+Server: socketHandler.js (initialized on the same HTTP server as Express)
 
-3. Student Restriction Flow:
-   - The student portal automatically lists only published exams retrieved via examService.getAllExams(). Draft or closed exams are never shown to the student.
-   - When starting an exam, the student enters the active ExamTakingView.
-   - When submitting the answers:
-     - The portal does a final fetch of the exam status via getExamById(examId).
-     - If the exam was closed or drafted by the teacher while the student was taking it, submission is blocked and an error alert is displayed.
-     - Successfully submitted active exams trigger a NotificationService success message and are logged in LoggerService.
+Socket Rooms:
+  - exam_${examId}_all          — all participants (students + teacher) in an exam
+  - exam_${examId}_teachers     — teachers monitoring an exam
+  - exam_${examId}_user_${userId} — private room per student
 
-4. Data Changes in Mock DB:
-   - The status is stored in each exam object in the `exams` array (inside `api/mockDb.js`) as a string property named `status` with one of three values: 'draft', 'published', or 'closed'.
-STUDENT PORTAL MODULAR FLOW
-===========================
-1. Exam List Rendering:
-   - On component mount, StudentPortal calls examService.getAllExams() to fetch all exam records.
-   - The list is filtered to only include exams with status 'published'.
-   - The filtered array is passed to StudentExamList, which renders a grid of active exams.
+Server Events Handled:
+  join_exam_chat ({ examId, user }):
+    - Assigns the socket to the correct rooms based on role.
+    - Sends the filtered chat history to the newly connected user.
 
-2. Active Taking View:
-   - Clicking "Start Exam" on any exam card updates the state, mounting the ExamTakingView.
-   - ExamTakingView maps over the exam questions, rendering a QuestionCard for each question.
-   - Each QuestionCard displays the question text and options. Clicking an option calls onSelectAnswer to save the selected answer in StudentPortal state.
+  send_message ({ examId, message, user, target }):
+    - target = 'all'       -> broadcasts to all participants
+    - target = 'teacher'   -> sends to teacher room + sender's private room
+    - target = userId      -> sends to specific student's room + teacher room
+    - Stores message in in-memory chatHistory Map keyed by examId.
 
-3. Submission and Score Saving:
-   - The "Submit Assessment" button is disabled until the student has answered every question in the exam.
-   - Clicking "Submit Assessment" verifies the latest status of the exam via getExamById(examId).
-   - If the exam is still published:
-     * Calculates the score percentage: (correct answers / total questions) * 100.
-     * Fetches current authenticated student info via authService.getCurrentUser().
-     * Stores a new score record in the mock database by invoking examService.saveScore(scoreRecord), containing:
-       - studentId (number or null)
-       - studentName (string)
-       - examId (number)
-       - examTitle (string)
-       - score (percentage number)
-       - date (formatted date string)
-     * Sets the active view state to submitted, which locks the answers, displays a summary of the score percentage, and triggers visual highlights on correct and incorrect options in QuestionCard.
-     * Dispatches success notifications and logs the action under LoggerService.
+  student_progress ({ examId, studentId, studentName, currentQuestion, totalQuestions, timeLeft, isOnline, warnings }):
+    - Receives live metrics from each active student.
+    - Broadcasts receive_student_progress to the exam's teacher room.
 
-4. Teacher View of Scores:
-   - Because the submitted score is stored in the mock database's in-memory `studentScores` array, the teacher can instantly see this new score.
-   - Clicking "View Scores" on any exam card inside the Teacher Dashboard fetches the latest scores via examService.getScoresByExam(examId) and displays the score details.
+  disconnect:
+    - Logs client disconnection.
+
+Client Hooks:
+  useChat.js:
+    - Manages a Socket.io connection scoped to a specific exam.
+    - Exposes: messages, isConnected, sendMessage(), sendProgress(), studentProgress state.
+    - Used by both ChatWidget (students) and LiveMonitorModal (teachers).
+
+  useTeacherNotifications.js:
+    - Background socket connection maintained by TeacherDashboard.
+    - Listens across all published exam rooms simultaneously.
+    - Fires NotificationService.info() toast banners when a student message arrives in a non-monitored exam.
+    - Tracks per-exam unread message badge counts.
+
+
+AUTH & SECURITY
+===============
+Server-Side:
+  - Passwords are hashed using bcryptjs (10 rounds) before storage in PostgreSQL.
+  - Login verifies the submitted password against the stored hash using bcrypt.compare().
+  - JWT tokens are signed with jsonwebtoken using a secret key (JWT_SECRET from .env).
+  - Every protected API route passes through authenticateToken middleware (authMiddleware.js):
+      * Extracts Bearer token from Authorization header.
+      * Verifies and decodes the JWT — returns 401 if missing, 403 if invalid/expired.
+      * Injects decoded user payload into req.user for downstream controllers.
+  - Teacher-only routes apply an additional inline role check (req.user.role === 'TEACHER'), returning 403 if a student attempts access.
+
+Client-Side:
+  - AuthService.js (OOP class) wraps all auth logic.
+  - Session is persisted in localStorage (via StorageService) under a namespaced key.
+  - ProtectedRoute.jsx intercepts React Router navigation:
+      * If no session: redirect to /login.
+      * If wrong role: redirect to the user's correct home route.
+  - All API calls in examService.js and userService.js attach the stored JWT in the Authorization header.
+
+
+ANTI-CHEATING SYSTEM
+====================
+Implemented in ExamTakingView.jsx using native browser APIs:
+
+Detection:
+  - document.visibilitychange: triggers when the browser tab is hidden (student switches tabs).
+  - window.blur: triggers when the browser window loses focus (student alt-tabs to another app or opens DevTools).
+
+Grace Period:
+  - A mountTimeRef records the timestamp when ExamTakingView mounts.
+  - Any violation event triggered within 1,500ms of mount is silently ignored to prevent false positives caused by the initial page load focus sequence.
+
+Student Experience:
+  - On first and every subsequent violation, a full-screen warning modal overlay blocks interaction.
+  - The modal displays the current warning count and forces the student to actively acknowledge ("I Understand") before resuming the exam.
+
+Teacher Experience:
+  - Each violation increments the local warningCount state, which is forwarded via the sendProgress WebSocket emit.
+  - Teachers see a live ⚠️ {count} warning badge on the student's activity card in the LiveMonitorModal.
+  - The card border turns alert red (#dc3545) for any student with warnings > 0.
 
 
 GENERIC SUPPORTING SERVICES
-===========================
-These OOP service classes are fully generic, reusable modules built to support any client-side JavaScript or React application, independent of ExamApp business logic.
+============================
+Four OOP service classes written in plain JavaScript with zero dependency on ExamApp logic.
+They are fully reusable and pluggable in any future client-side project.
 
 1. StorageService (StorageService.js)
-   - Reusability: Generic key-value wrapper for window.localStorage. Handles JSON serialization/deserialization transparently, provides optional default values, and scopes storage operations using a custom key prefix namespace.
-   - Core API:
-     * set(key, value): Serializes and stores key.
-     * get(key, defaultValue): Deserializes key, returns defaultValue if not found.
-     * remove(key): Removes key.
-     * clear(): Clears all keys starting with the namespace prefix.
+   - Wraps window.localStorage with prefix namespacing and transparent JSON serialization.
+   - Core API: set(key, value), get(key, defaultValue), remove(key), clear()
 
 2. NotificationService (NotificationService.js)
-   - Reusability: Decouples notification trigger logic from UI components. Any component or service can trigger a message, and UI components can register listeners to receive them instantly.
-   - Core API:
-     * success(message): Registers and dispatches a success alert, logging to history.
-     * error(message): Registers and dispatches an error alert, logging to history.
-     * warning(message): Registers and dispatches a warning alert, logging to history.
-     * getHistory(): Returns full chronological array of triggered notifications.
-     * clearHistory(): Resets local activity log history.
-     * subscribe(listener): Registers callbacks triggered upon new alerts. Returns an unsubscribe handler.
+   - Decouples notification triggers from UI components.
+   - Any module can fire an alert; registered listeners receive it.
+   - Core API: success(msg), error(msg), warning(msg), info(msg), getHistory(), clearHistory(), subscribe(listener)
 
 3. LoggerService (LoggerService.js)
-   - Reusability: Provides standardized audit trailing. Centralizes application log collections, useful for remote tracking or local console debugging.
-   - Core API:
-     * info(message): Stores an INFO level log with timestamp.
-     * success(message): Stores a SUCCESS level log with timestamp.
-     * error(message): Stores an ERROR level log with timestamp.
-     * warning(message): Stores a WARNING level log with timestamp.
-     * getLogs(): Returns the logs collection (capped at the last 10 entries).
-     * clearLogs(): Resets logs.
+   - Maintains a FIFO in-memory log buffer (capped at 10 entries).
+   - Core API: info(msg), success(msg), error(msg), warning(msg), getLogs(), clearLogs()
 
 4. ConfigurationService (ConfigurationService.js)
-   - Reusability: Consolidates environment metadata, static defaults, and backend parameters. Helps swap environment variables or static constants dynamically.
-   - Core API:
-     * get(key, defaultValue): Retrieves static configuration value or fallback.
-     * set(key, value): Sets configuration overrides dynamically.
-     * getAll(): Returns cloned object of current configuration keys and values.
+   - Key-value runtime configuration store for environment-specific constants.
+   - Core API: get(key, defaultValue), set(key, value), getAll()
 
 
-MOCK DB AND API
-===============
-The app uses an in-memory mock database (mockDb.js) containing:
-- users: array of user objects with id, username, password, fullName, and role (TEACHER or STUDENT)
-- exams: array of exam objects, each with id, title, status, and questions array
-- studentScores: array of score records with studentName, examId, and score
+EXAM STATUS LIFECYCLE
+=====================
+Three states determine exam visibility and student access:
 
-Services layer:
-- userService.js: findUserByCredentials, findUserByUsername, createUser (400ms simulated delay)
-- examService.js: getAllExams, getExamById, createExam, updateExam, deleteExam, getAllScores, getScoresByExam (600ms simulated delay)
+  draft     -> Created or inactive. Visible only to the teacher. Hidden from students.
+  published -> Active and visible to students. Students can start and submit the exam.
+  closed    -> Visible on the teacher dashboard. Students cannot start or submit it.
+              If a student is mid-exam when it is closed, their submission will be blocked with a clear error message.
 
-OOP Services:
-- StorageService (class): wraps localStorage with prefix namespacing and JSON serialization
-- AuthService (class): login, register, logout, getCurrentUser, isLoggedIn, getRole, isTeacher, isStudent
-
-This layer is designed so that when a real backend is built, only the service imports need to change.
+State transitions:
+  Teacher changes the inline status dropdown -> PUT /api/exams/:id { status: newStatus }
+  The server updates PostgreSQL and returns the updated exam.
+  All subsequent student fetches reflect the new status.
 
 
-FILES STRUCTURE
-===============
-client/src/
-  api/
-    mockDb.js          - In-memory data (users, exams, scores)
-    examService.js     - Async exam CRUD wrappers
-    userService.js     - Async user auth wrappers
-  services/
-    StorageService.js  - OOP localStorage wrapper class
-    AuthService.js     - OOP authentication logic class
-    LoggerService.js   - OOP application logger class
-    NotificationService.js - OOP alert and activities notification class
-    ConfigurationService.js - OOP runtime configurations class
-  components/
-    LoginPage.jsx      - Login form component
-    RegisterPage.jsx   - Registration form component
-    SandboxPage.jsx    - Interactive sandbox dashboard for services validation
-    NavigationMenu.jsx - Global navbar component
-    ProtectedRoute.jsx - Client routing authentication blocker
-    HomeRedirect.jsx   - Role-based redirect router controller
-    ExamCard.jsx       - Individual exam component view
-    ExamList.jsx       - Grid representation component for exams
-    ScoreTable.jsx     - Grade table layout component
-    StudentExamList.jsx - Component rendering published exams list
-    QuestionCard.jsx   - Component rendering individual multiple-choice question
-    ExamTakingView.jsx - Component rendering active quiz taking workflow
-   __tests__/
-    AuthService.test.js - Vitest tests for auth logic
-    GenericServices.test.js - Vitest tests for generic storage, logs, notifs, configs services
-    NavigationAndRouting.test.jsx - Vitest rendering tests for ProtectedRoute and Navigation links
-    TeacherDashboard.test.jsx - Vitest unit tests verifying exam card loads and scores table triggers
-    StudentExamList.test.jsx - Vitest unit and integration tests for student portal components
-  App.jsx              - Main router, route setups, and application entry point
-  TeacherDashboard.jsx - Teacher view controller mapping data to components
-  StudentPortal.jsx    - Student view
-  main.jsx             - React entry point
+EXAM SUBMISSION & SCORE LIFECYCLE
+===================================
+1. Student clicks "Submit Assessment".
+2. ExamTakingView re-fetches the exam to confirm it is still 'published'.
+3. Score is calculated: (number of correct answers / total questions) * 100.
+4. POST /api/scores sends: { exam_id, student_id, score, answers (JSONB) } to the server.
+5. ScoreService.js writes the record to the submissions table in PostgreSQL.
+6. The student sees their score and correct/incorrect answer highlights.
+7. Teacher opens ScoreTable, calls GET /api/scores/:examId — all records returned.
+8. Teacher clicks "Publish Results" — POST /api/exams/:id/publish-results sets results_released=true.
+9. Students can now see their results in their portal.
 
 
-UNIT & COMPONENT TESTS
-======================
-All services and routing components are fully covered by automated unit tests running on Vitest under the browser-like jsdom environment.
+UNIT & COMPONENT TESTS (47 tests)
+===================================
+All tests run under Vitest + jsdom.
 
-1. StorageService Test Cases:
-   - Saves and retrieves values with full serialization integrity.
-   - Gracefully returns defined fallbacks/default values on non-existent keys.
-   - Removes targeted keys successfully.
-   - Clears prefixed keys cleanly without modifying native outside localStorage items.
+AuthService.test.js (12 tests):
+  - Login success with valid credentials
+  - Login failure with invalid username
+  - Login failure with wrong password
+  - Register new user successfully
+  - Register throws error on duplicate username
+  - Logout clears stored user
+  - getCurrentUser returns stored user
+  - Role checks after login (isTeacher, isStudent)
 
-2. LoggerService Test Cases:
-   - Registers all levels of logs (INFO, SUCCESS, ERROR, WARNING) with automatic timestamps.
-   - FIFO Buffer: Caps total in-memory size to the configured threshold (e.g. 5 or 10), shifting out oldest records as new ones arrive.
-   - Clears logs cache accurately.
+GenericServices.test.js (12 tests):
+  - StorageService: set/get/remove/clear with prefix isolation
+  - LoggerService: FIFO buffer, all log levels, clearLogs
+  - NotificationService: dispatch/subscribe/unsubscribe, history
+  - ConfigurationService: get/set/getAll/fallback defaults
 
-3. NotificationService Test Cases:
-   - Dispatches success, error, warning objects with unique, automatic IDs and timestamps.
-   - Forwards logs automatically to the integrated LoggerService.
-   - Subscriber system: Correctly notifies all active listeners and stops dispatching once unsubscribe handles are run.
+NavigationAndRouting.test.jsx (5 tests):
+  - NavigationMenu renders TEACHER-specific links correctly
+  - NavigationMenu renders STUDENT-specific links correctly
+  - ProtectedRoute blocks unauthorized access and redirects
+  - ProtectedRoute allows access with correct role
+  - Unauthenticated access is fully denied
 
-4. ConfigurationService Test Cases:
-   - Returns default configurations correctly (appName, version, defaultRole, API delay).
-   - Returns fallback variables if key doesn't exist.
-   - Modifies and overrides existing parameters or appends new metadata properties at runtime.
+TeacherDashboard.test.jsx (3 tests):
+  - Loading spinner appears while fetching exams
+  - Exam list loads and displays correctly
+  - "View Scores" triggers score fetch and table render
 
-5. NavigationMenu and Routing Test Cases:
-   - Navigation links: Renders TEACHER links (Teacher Dashboard, Services Sandbox) and suppresses STUDENT links when a teacher logs in.
-   - Navigation links: Renders STUDENT links (Student Portal, Services Sandbox) and suppresses TEACHER links when a student logs in.
-   - ProtectedRoute: Blocks access to restricted paths (/teacher) and redirects to index when a user with the wrong role attempts entry.
-   - ProtectedRoute: Seamlessly yields inner child components when the correct user role matches.
-   - Unauthenticated Redirects: Denies access to protected components entirely if no session is active.
+ExamCrud.test.jsx (4 tests):
+  - Create exam calls service with correct payload
+  - Edit exam updates the exam record
+  - Delete exam removes the exam
+  - Validation blocks empty title or questions
 
-6. TeacherDashboard Test Cases:
-   - Loading Screen: Confirms loading spinner appears while fetching list elements from mock API.
-   - Exams Binding: Verifies exam card bindings (titles, question size, status) resolve on successful response.
-   - Click Scores: Confirms click events trigger data calls and accurately map scores to clean tables.
-   - Error handling: Confirms API exception triggers result in correct NotificationService.error calls.
-7. Student Exam List & Taking Test Cases:
-   - Student page shows only published exams (draft/closed exams filtered out).
-   - Student can start an exam (clicking start loads ExamTakingView).
-   - Question options render correctly in QuestionCard.
-   - Submit is disabled until all questions are answered in ExamTakingView.
+ExamStatus.test.jsx (4 tests):
+  - Teacher can change exam status
+  - Draft exams are hidden from student view
+  - Published exams are accessible to students
+  - Closed exams block student submission
+
+StudentExamList.test.jsx (7 tests):
+  - Student portal shows only published exams
+  - Student can click start and enter an exam
+  - Questions and options render correctly
+  - Submit is disabled until all questions answered
+  - Score is calculated correctly on submission
+  - Result summary displays correct/incorrect answers
+  - Teacher score table can show saved score
 
 
-DEVELOPMENT RULES
+DEVELOPMENT WORKFLOW
+====================
+- Main branch: main (stable releases only)
+- Working branch: dev (integration branch)
+- Feature branches created from dev (e.g. feature/auth, feature/sockets, tab-focus-monitor)
+- Pull Requests opened from feature branch into dev
+- PR merged on GitHub, remote branch deleted
+- Local: git checkout dev && git pull origin dev && git branch -d <feature>
+- Docker containers rebuilt after backend or config changes: docker compose down && docker compose up -d --build
+
+
+DEPLOYMENT
+==========
+The application is deployed using Docker Compose with three services:
+
+1. db (PostgreSQL 15):
+   - Image: postgres:15-alpine
+   - Persistent storage via named volume: pgdata
+   - Exposed on port 5432
+
+2. backend (Node.js + Express):
+   - Built from server/Dockerfile
+   - Connects to db via DATABASE_URL environment variable
+   - Exposed on port 3001
+
+3. frontend (React + Vite):
+   - Built from client/Dockerfile
+   - Points to backend via VITE_API_URL environment variable
+   - Exposed on port 5173
+
+All services are networked via a dedicated Docker Bridge network: app-network.
+
+To start the full stack:
+  docker compose up -d --build
+
+To stop:
+  docker compose down
+
+To rebuild after code changes:
+  docker compose up -d --build
+
+
+DEVELOPER SUMMARY
 =================
-- All work is done on the dev branch, never directly on main
-- Feature branches are created from dev (e.g. feature/auth-login-register, feature/generic-services, feature/routing-navigation, feature/teacher-dashboard)
-- Every module or feature gets its own separate commit
-- Comments and notes are committed separately after each feature
-- The project follows modular development: services first, then teacher features, then student features
+Architecture decisions and technical rationale:
 
+- Hybrid JSONB + Relational Schema:
+  Questions and student answers are stored as JSONB in PostgreSQL. This avoids creating a separate normalized questions table while retaining the power of relational DB joins for users and submissions. This is the correct approach for a schema where question structure may vary per exam type.
 
-DEVELOPER SUMMARY & PERSONAL DEVELOPMENT NOTES
-==============================================
-This section contains a personal technical review of the architectural decisions made in the ExamApp system.
+- JWT Stateless Authentication:
+  Using JWTs instead of server-side sessions means the backend is fully stateless and horizontally scalable. Each request is self-contained and independently verifiable.
 
-- Modular Design:
-  Breaking down main portal views (StudentPortal and TeacherDashboard) into modular, single-responsibility sub-components (such as StudentExamList, QuestionCard, ExamForm, and ExamTakingView) significantly improves codebase readability, makes automated component testing straightforward, and avoids duplication.
+- Socket.io Room Architecture:
+  Three room types (all, teachers, per-user private) enable fine-grained message routing without broadcasting private messages to unintended recipients. This is the standard pattern for multi-tenant real-time chat.
 
-- Generic Support Services:
-  Domain-agnostic services (StorageService, LoggerService, and NotificationService) are written using clean OOP principles with zero references to ExamApp logic. This makes them fully reusable and easily pluggable into future projects.
+- Anti-Cheating Grace Period:
+  The 1,500ms mount-time filter was necessary because all browsers fire a blur event as the browser routes to a new page, which would have caused every student to immediately accumulate a false warning on exam entry.
 
-- Exam Status Management Flow:
-  Exam states (draft, published, closed) are strictly validated. Double-checks occur at both initial loading and submission points to prevent students from submitting answers to closed exams, or exams updated mid-test by the instructor.
+- Debounced Username Availability:
+  The real-time username check is debounced at 400ms to prevent hammering the API on every keystroke. The UX feel is kept instant while the network load is kept minimal.
 
-- Comprehensive Testing (Vitest):
-  All key logical flows (authentication, exam creation, dynamic question manipulation, status transitions, assessment submissions, and generic supporting logs/services) are fully covered by fast and robust JSDOM unit tests.
+- Generic OOP Services:
+  Services (Storage, Logger, Notification, Configuration) are deliberately domain-agnostic. Zero ExamApp references exist in their implementations. This was a conscious design choice to demonstrate clean separation of concerns and portability.
+
+- Modular Component Architecture:
+  Breaking TeacherDashboard and StudentPortal into smaller, single-responsibility components (ExamList, ExamForm, ScoreTable, ExamTakingView, QuestionCard, ChatWidget, etc.) makes each component independently testable, and the Vitest suite is kept clean and focused.
