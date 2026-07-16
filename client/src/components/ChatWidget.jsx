@@ -3,7 +3,7 @@ import { useChat } from '../hooks/useChat';
 import authService from '../services/AuthService';
 import './ChatWidget.css';
 
-function ChatWidget({ examId, currentQuestionIndex = 0, totalQuestions = 0, timeLeft = 0 }) {
+function ChatWidget({ examId, currentQuestionIndex = 0, totalQuestions = 0, timeLeft = 0, warnings = 0 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
@@ -16,9 +16,9 @@ function ChatWidget({ examId, currentQuestionIndex = 0, totalQuestions = 0, time
   // Emit student progress in real-time
   useEffect(() => {
     if (isConnected && sendProgress && currentUser?.role === 'STUDENT' && totalQuestions > 0) {
-      sendProgress(currentQuestionIndex + 1, totalQuestions, timeLeft);
+      sendProgress(currentQuestionIndex + 1, totalQuestions, timeLeft, warnings);
     }
-  }, [currentQuestionIndex, totalQuestions, timeLeft, isConnected, sendProgress]);
+  }, [currentQuestionIndex, totalQuestions, timeLeft, isConnected, sendProgress, warnings]);
 
   // Track unread messages from teacher
   useEffect(() => {

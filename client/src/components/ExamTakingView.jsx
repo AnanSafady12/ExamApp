@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import QuestionCard from './QuestionCard';
 import ChatWidget from './ChatWidget';
 
@@ -16,6 +16,9 @@ function ExamTakingView({
   // Initialize timeLeft using exam.timeLimit (in minutes) converted to seconds. Default to 60 if not provided.
   const [timeLeft, setTimeLeft] = useState((exam.timeLimit || 60) * 60);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [warningCount, setWarningCount] = useState(0);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const mountTimeRef = useRef(Date.now());
 
   // Timer countdown effect
   useEffect(() => {
@@ -37,6 +40,38 @@ function ExamTakingView({
     return () => clearInterval(timerId);
   }, [submitted, timeLeft, onSubmit]);
 
+  // Anti-cheating visibility and tab change detection
+  useEffect(() => {
+    // Only monitor if the exam has started and is not yet submitted
+    if (submitted) return;
+
+    const handleViolation = () => {
+      // Ignore violations happening within the first 1.5 seconds of mounting to prevent initial focus noise
+      if (Date.now() - mountTimeRef.current < 1500) return;
+
+      setWarningCount((prev) => prev + 1);
+      setShowWarningModal(true);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handleViolation();
+      }
+    };
+
+    const handleBlur = () => {
+      handleViolation();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [submitted]);
+
   // Format timeLeft into MM:SS
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -45,14 +80,16 @@ function ExamTakingView({
   };
 
   // Count the number of correct choices selected (case-insensitive for short answers)
-  const score = exam.questions.reduce((acc, q) => {
-    const studentAns = answers[q.id] || '';
-    const correctAns = q.correctAnswer || '';
-    const isCorrect = q.type === 'SHORT_ANSWER'
-      ? studentAns.trim().toLowerCase() === correctAns.trim().toLowerCase()
-      : studentAns === correctAns;
-    return acc + (isCorrect ? 1 : 0);
-  }, 0);
+  const score = useMemo(() => {
+    return exam.questions.reduce((acc, q) => {
+      const studentAns = answers[q.id] || '';
+      const correctAns = q.correctAnswer || '';
+      const isCorrect = q.type === 'SHORT_ANSWER'
+        ? studentAns.trim().toLowerCase() === correctAns.trim().toLowerCase()
+        : studentAns === correctAns;
+      return acc + (isCorrect ? 1 : 0);
+    }, 0);
+  }, [exam.questions, answers]);
 
   // Calculates the final score percentage
   const scorePercentage = exam.questions.length
@@ -60,9 +97,11 @@ function ExamTakingView({
     : 0;
 
   // Check if every question in the assessment has been answered
-  const allAnswered = exam.questions.every(
-    (q) => answers[q.id] !== undefined && answers[q.id] !== null && answers[q.id].toString().trim() !== ''
-  );
+  const allAnswered = useMemo(() => {
+    return exam.questions.every(
+      (q) => answers[q.id] !== undefined && answers[q.id] !== null && answers[q.id].toString().trim() !== ''
+    );
+  }, [exam.questions, answers]);
 
   const today = new Date().toLocaleDateString('en-US', {
     month: 'long',
@@ -93,6 +132,7 @@ function ExamTakingView({
                 currentQuestionIndex={currentQuestionIndex}
                 totalQuestions={exam.questions.length}
                 timeLeft={timeLeft}
+                warnings={warningCount}
               />
               <div className="text-end">
                 <span className={`fw-bold px-3 py-2 rounded-3 ${timeLeft < 60 ? 'bg-danger text-white' : ''}`} style={{ background: timeLeft < 60 ? '' : 'var(--primary-light)', color: timeLeft < 60 ? '' : 'var(--primary)', fontSize: '18px', transition: 'all 0.3s' }}>
@@ -238,6 +278,38 @@ function ExamTakingView({
           )}
         </div>
       </div>
+      {/* Anti-Cheating Violation Warning Modal Overlay */}
+      {showWarningModal && (
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 9999 }} tabIndex="-1">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow-lg text-center" style={{ borderRadius: '15px', overflow: 'hidden', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+              <div className="modal-body p-5">
+                <div className="text-danger mb-3" style={{ fontSize: '3.5rem' }}>⚠️</div>
+                <h3 className="fw-bold mb-2" style={{ color: 'var(--danger)', fontFamily: 'var(--heading)' }}>Anti-Cheating Warning</h3>
+                <p className="text-muted" style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                  We detected that you switched tabs, minimized the browser, or focused on another application.
+                </p>
+                <div className="p-3 my-4 rounded-4" style={{ backgroundColor: 'var(--danger-light)', border: '1px solid var(--danger-border)' }}>
+                  <span className="fw-bold" style={{ fontSize: '18px', color: 'var(--danger)' }}>
+                    Warning Count: {warningCount}
+                  </span>
+                </div>
+                <p className="small text-muted mb-4" style={{ color: 'var(--text-muted)' }}>
+                  Please keep focus on this tab. All window navigation events are logged and reported in real-time to your instructor.
+                </p>
+                <button 
+                  type="button" 
+                  className="btn btn-danger w-100 py-2.5 fw-bold" 
+                  style={{ borderRadius: '10px' }}
+                  onClick={() => setShowWarningModal(false)}
+                >
+                  I Understand, Resume Exam
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
