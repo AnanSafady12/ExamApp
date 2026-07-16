@@ -6,6 +6,7 @@ const SOCKET_SERVER_URL = 'http://localhost:3001';
 export const useChat = (examId, user) => {
   const [messages, setMessages] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [studentProgress, setStudentProgress] = useState({});
   const socketRef = useRef(null);
 
   useEffect(() => {
@@ -35,6 +36,17 @@ export const useChat = (examId, user) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
+    // Listen for incoming student progress updates (for teachers)
+    socketRef.current.on('receive_student_progress', (data) => {
+      setStudentProgress((prev) => ({
+        ...prev,
+        [data.studentId]: {
+          ...data,
+          lastActive: Date.now()
+        }
+      }));
+    });
+
     // Cleanup on unmount
     return () => {
       if (socketRef.current) {
@@ -55,5 +67,20 @@ export const useChat = (examId, user) => {
     }
   };
 
-  return { messages, isConnected, sendMessage };
+  // Method to send student progress
+  const sendProgress = (currentQuestion, totalQuestions, timeLeft) => {
+    if (socketRef.current && isConnected) {
+      socketRef.current.emit('student_progress', {
+        examId,
+        studentId: user.id,
+        studentName: user.name || user.fullName,
+        currentQuestion,
+        totalQuestions,
+        timeLeft,
+        isOnline: true
+      });
+    }
+  };
+
+  return { messages, isConnected, sendMessage, studentProgress, sendProgress };
 };

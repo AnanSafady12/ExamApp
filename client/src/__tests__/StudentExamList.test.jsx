@@ -12,6 +12,7 @@ vi.mock('../api/examService', () => {
     getAllExams: vi.fn(),
     getExamById: vi.fn(),
     saveScore: vi.fn(),
+    getStudentSubmissions: vi.fn().mockResolvedValue([]),
   };
 });
 
@@ -194,8 +195,13 @@ describe('Student Exam List and Exam Taking', () => {
     const optionsQ1 = screen.getAllByRole('button', { name: 'Yes' });
     fireEvent.click(optionsQ1[0]);
 
+    // Click Next button to navigate to Question 2 due to exam pagination
+    const nextBtn = screen.getByRole('button', { name: /Next →/i });
+    fireEvent.click(nextBtn);
+
+    // Now select "Yes" option for Question 2 (which is index 0 on the screen now)
     const optionsQ2 = screen.getAllByRole('button', { name: 'Yes' });
-    fireEvent.click(optionsQ2[1]);
+    fireEvent.click(optionsQ2[0]);
 
     const submitBtn = screen.getByRole('button', { name: /Submit Assessment/i });
     fireEvent.click(submitBtn);

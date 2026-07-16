@@ -3,15 +3,22 @@ import { useChat } from '../hooks/useChat';
 import authService from '../services/AuthService';
 import './ChatWidget.css';
 
-function ChatWidget({ examId }) {
+function ChatWidget({ examId, currentQuestionIndex = 0, totalQuestions = 0, timeLeft = 0 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
   const currentUser = authService.getCurrentUser();
   
-  const { messages, isConnected, sendMessage } = useChat(examId, currentUser);
+  const { messages, isConnected, sendMessage, sendProgress } = useChat(examId, currentUser);
   const messagesEndRef = useRef(null);
   const lastMessageLength = useRef(0);
+
+  // Emit student progress in real-time
+  useEffect(() => {
+    if (isConnected && sendProgress && currentUser?.role === 'STUDENT' && totalQuestions > 0) {
+      sendProgress(currentQuestionIndex + 1, totalQuestions, timeLeft);
+    }
+  }, [currentQuestionIndex, totalQuestions, timeLeft, isConnected, sendProgress]);
 
   // Track unread messages from teacher
   useEffect(() => {
@@ -65,7 +72,7 @@ function ChatWidget({ examId }) {
             <button className="btn-close btn-close-white" onClick={() => setIsOpen(false)}></button>
           </div>
           
-          <div className="chat-messages p-2" style={{ height: '300px', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
+          <div className="chat-messages p-2" style={{ height: '300px', overflowY: 'auto' }}>
             {messages.length === 0 ? (
               <p className="text-muted text-center mt-4 small">No messages yet. Say hello!</p>
             ) : (
@@ -93,7 +100,7 @@ function ChatWidget({ examId }) {
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={handleSend} className="chat-input p-2 border-top bg-white d-flex gap-2">
+          <form onSubmit={handleSend} className="chat-input p-2 border-top d-flex gap-2">
             <input 
               type="text" 
               className="form-control form-control-sm"

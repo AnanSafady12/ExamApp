@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import authService, { ROLES } from './services/AuthService';
@@ -15,6 +15,22 @@ import HomeRedirect from './components/HomeRedirect';
 function App() {
   // Track active logged-in user from localStorage session
   const [user, setUser] = useState(authService.getCurrentUser());
+
+  // Track active visual theme (default to light mode)
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('examapp_theme') || 'light';
+  });
+
+  // Apply theme attributes dynamically to document element
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('examapp_theme', theme);
+  }, [theme]);
+
+  // Toggle theme selection
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   // Trigger login logic and update state to trigger re-renders
   const handleLogin = async (username, password) => {
@@ -38,7 +54,16 @@ function App() {
     <HashRouter>
       <div className="container py-4">
         {/* Render global navigation header only if a user is logged in */}
-        {user && <NavigationMenu user={user} onLogout={handleLogout} />}
+        {user && (
+          <NavigationMenu 
+            user={user} 
+            onLogout={handleLogout} 
+            theme={theme}
+            onToggleTheme={toggleTheme}
+          />
+        )}
+
+
 
         {/* Define routing configuration for the entire web app */}
         <Routes>
