@@ -2,9 +2,9 @@ import pool from '../db/connect.js';
 
 class ScoreService {
   async saveSubmission(studentId, examId, answers) {
-    // 1. Fetch the exam to get correct answers and calculate score securely
+    // 1. Fetch the exam to get correct answers, status, and calculate score securely
     const examResult = await pool.query(
-      'SELECT questions FROM exams WHERE id = $1',
+      'SELECT questions, status FROM exams WHERE id = $1',
       [examId]
     );
 
@@ -12,7 +12,12 @@ class ScoreService {
       throw new Error('Exam not found');
     }
 
-    const questions = examResult.rows[0].questions;
+    // 2. Server-side status validation — reject submissions for non-published exams
+    const { questions, status } = examResult.rows[0];
+    if (status !== 'published') {
+      throw new Error('Exam is no longer accepting submissions');
+    }
+
     if (!questions || questions.length === 0) {
       throw new Error('Exam has no questions');
     }
