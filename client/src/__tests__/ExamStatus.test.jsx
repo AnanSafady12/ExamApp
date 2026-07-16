@@ -12,6 +12,7 @@ vi.mock('../api/examService', () => {
     getExamById: vi.fn(),
     updateExam: vi.fn(),
     getScoresByExam: vi.fn().mockResolvedValue([]),
+    getStudentSubmissions: vi.fn().mockResolvedValue([]),
   };
 });
 

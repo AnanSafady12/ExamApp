@@ -80,6 +80,22 @@ export const initSocket = (httpServer) => {
       console.log(`💬 Message sent in exam ${examId} by ${user?.name} to ${target}: ${message}`);
     });
 
+    // Handle student progress updates
+    socket.on('student_progress', (data) => {
+      const { examId, studentId, studentName, currentQuestion, totalQuestions, timeLeft, isOnline } = data;
+      
+      // Forward the progress status update to all teachers connected to the exam's teacher room
+      io.to(`exam_${examId}_teachers`).emit('receive_student_progress', {
+        studentId,
+        studentName,
+        currentQuestion,
+        totalQuestions,
+        timeLeft,
+        isOnline,
+        timestamp: new Date().toISOString()
+      });
+    });
+
     socket.on('disconnect', () => {
       console.log(`🔌 Client disconnected: ${socket.id}`);
     });

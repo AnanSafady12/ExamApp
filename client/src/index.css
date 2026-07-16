@@ -1,57 +1,117 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* HSL Color System - Permanent Deep Dark Theme */
-  --bg: #0f172a; /* Slate 900 - Dark gray */
-  --bg-card: rgba(30, 41, 59, 0.7); /* Slate 800 translucent */
-  --bg-card-hover: rgba(22, 28, 46, 0.85);
-  --text: #cbd5e1; /* Soft slate gray for standard text */
-  --text-h: #ffffff; /* Bright white for headings */
-  --text-muted: #94a3b8;
-  --border: rgba(255, 255, 255, 0.08); /* Subtle glass borders */
-  --border-hover: rgba(255, 255, 255, 0.16);
-  --code-bg: #1e293b;
+  /* HSL Color System - Clean Corporate Light Theme (Default) */
+  --bg: #f8fafc; /* Slate 50 */
+  --bg-card: #ffffff; /* Pure white */
+  --bg-card-hover: #f1f5f9; /* Slate 100 */
+  --text: #334155; /* Slate 700 */
+  --text-h: #0f172a; /* Slate 900 */
+  --text-muted: #64748b; /* Slate 500 */
+  --border: #e2e8f0; /* Slate 200 */
+  --border-hover: #cbd5e1; /* Slate 300 */
+  --code-bg: #f1f5f9; /* Slate 100 */
 
-  /* Glassmorphism & Shadow Depth - Enhanced for Dark Mode */
-  --glass-bg: rgba(16, 20, 32, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 25px 0 rgba(147, 51, 234, 0.25);
+  /* Glassmorphism & Shadow Depth - Clean Soft Shadows */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-glow: none; /* No colorful neon glow */
 
-  /* High contrast neon colors */
-  --primary-h: 262;
-  --primary-s: 100%;
-  --primary-l: 68%;
+  /* Professional Corporate Blue Palette */
+  --primary-h: 221.2;
+  --primary-s: 83.2%;
+  --primary-l: 53.3%;
   --primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
-  --primary-hover: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 10%));
-  --primary-light: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.15);
-  --primary-border: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.45);
+  --primary-hover: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 10%));
+  --primary-light: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.08);
+  --primary-border: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.25);
 
-  --secondary-h: 224;
-  --secondary-s: 100%;
-  --secondary-l: 65%;
+  --secondary-h: 215.4;
+  --secondary-s: 16.3%;
+  --secondary-l: 46.9%;
   --secondary: hsl(var(--secondary-h), var(--secondary-s), var(--secondary-l));
-  
-  /* Semantic state colors */
-  --success: hsl(142, 85%, 55%);
-  --success-light: hsla(142, 85%, 55%, 0.15);
-  --success-border: hsla(142, 85%, 55%, 0.4);
-  
-  --warning: hsl(43, 100%, 60%);
-  --warning-light: hsla(43, 100%, 60%, 0.15);
-  --warning-border: hsla(43, 100%, 60%, 0.4);
-  
-  --danger: hsl(350, 95%, 62%);
-  --danger-light: hsla(350, 95%, 62%, 0.18);
-  --danger-border: hsla(350, 95%, 62%, 0.45);
+
+  /* Semantic state colors - Corporate clean */
+  --success: hsl(142.1, 76.2%, 36.3%);
+  --success-light: hsla(142.1, 76.2%, 36.3%, 0.08);
+  --success-border: hsla(142.1, 76.2%, 36.3%, 0.2);
+
+  --warning: hsl(38, 92%, 50%);
+  --warning-light: hsla(38, 92%, 50%, 0.08);
+  --warning-border: hsla(38, 92%, 50%, 0.2);
+
+  --danger: hsl(346.8, 77.2%, 49.8%);
+  --danger-light: hsla(346.8, 77.2%, 49.8%, 0.08);
+  --danger-border: hsla(346.8, 77.2%, 49.8%, 0.2);
 
   /* Fonts */
   --sans: 'Inter', system-ui, -apple-system, sans-serif;
   --heading: 'Outfit', system-ui, -apple-system, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
+
+  /* Input fields */
+  --input-bg: #ffffff;
+
+  /* Chart hover highlights */
+  --hover-bg: rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="dark"] {
+  /* HSL Color System - Sleek Corporate Dark Theme */
+  --bg: #0f172a; /* Slate 900 */
+  --bg-card: #1e293b; /* Slate 800 */
+  --bg-card-hover: #1b2436; /* Slate 850 */
+  --text: #cbd5e1; /* Slate 300 */
+  --text-h: #f8fafc; /* Slate 50 */
+  --text-muted: #64748b; /* Slate 500 */
+  --border: #334155; /* Slate 700 */
+  --border-hover: #475569; /* Slate 600 */
+  --code-bg: #1e293b; /* Slate 800 */
+
+  /* Glassmorphism & Shadow Depth - Dark Mode Shadow Adjustments */
+  --glass-bg: rgba(30, 41, 59, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.25), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-glow: none;
+
+  /* Corporate Dark Mode Blue */
+  --primary-h: 217.2;
+  --primary-s: 91.2%;
+  --primary-l: 59.8%;
+  --primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
+  --primary-hover: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 10%));
+  --primary-light: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.15);
+  --primary-border: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.4);
+
+  --secondary-h: 215.4;
+  --secondary-s: 16.3%;
+  --secondary-l: 56.9%;
+  --secondary: hsl(var(--secondary-h), var(--secondary-s), var(--secondary-l));
+
+  /* Semantic states for dark mode */
+  --success: hsl(142.1, 70.6%, 45.3%);
+  --success-light: hsla(142.1, 70.6%, 45.3%, 0.12);
+  --success-border: hsla(142.1, 70.6%, 45.3%, 0.3);
+
+  --warning: hsl(47.9, 95.8%, 53.1%);
+  --warning-light: hsla(47.9, 95.8%, 53.1%, 0.12);
+  --warning-border: hsla(47.9, 95.8%, 53.1%, 0.3);
+
+  --danger: hsl(346.8, 87.2%, 62.4%);
+  --danger-light: hsla(346.8, 87.2%, 62.4%, 0.15);
+  --danger-border: hsla(346.8, 87.2%, 62.4%, 0.35);
+
+  --input-bg: #1e293b;
+
+  /* Chart hover highlights */
+  --hover-bg: rgba(255, 255, 255, 0.05);
 }
 
 body {
@@ -65,26 +125,9 @@ body {
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color-scheme: dark;
   position: relative;
   overflow-x: hidden;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  top: -50%; left: -50%; right: -50%; bottom: -50%;
-  background-image: radial-gradient(circle at 20% 30%, hsla(262, 80%, 60%, 0.05) 0%, transparent 20%),
-                    radial-gradient(circle at 80% 70%, hsla(224, 80%, 60%, 0.05) 0%, transparent 20%);
-  animation: bg-drift 25s infinite alternate ease-in-out;
-  z-index: -1;
-  pointer-events: none;
-}
-
-@keyframes bg-drift {
-  0% { transform: scale(1) translate(0px, 0px) rotate(0deg); }
-  50% { transform: scale(1.2) translate(50px, -50px) rotate(5deg); }
-  100% { transform: scale(1) translate(-50px, 50px) rotate(-5deg); }
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {

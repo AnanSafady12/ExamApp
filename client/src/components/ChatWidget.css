@@ -37,11 +37,37 @@
   top: calc(100% + 10px);
   right: 0;
   width: 320px;
-  background-color: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
+}
+
+.chat-messages {
+  background-color: var(--bg) !important;
+}
+
+.chat-messages .bg-white {
+  background-color: var(--bg-card) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+.chat-input {
+  background-color: var(--bg-card) !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+.chat-input input {
+  background-color: var(--input-bg) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+.chat-input input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px var(--primary-light) !important;
 }

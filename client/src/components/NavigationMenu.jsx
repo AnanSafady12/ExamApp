@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import authService, { ROLES } from '../services/AuthService';
 
 // Renders the global top navigation bar for logged-in users
-function NavigationMenu({ user, onLogout }) {
+function NavigationMenu({ user, onLogout, theme, onToggleTheme }) {
   const navigate = useNavigate();
 
   // Handles clicking the logout button by cleaning state and redirecting
@@ -49,8 +49,19 @@ function NavigationMenu({ user, onLogout }) {
             </li>
           </ul>
 
-          {/* User profile badges and logout button */}
+          {/* User profile badges, theme toggle and logout button */}
           <div className="d-flex align-items-center gap-3">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={onToggleTheme}
+              className="btn btn-link nav-link p-2 rounded-3 d-flex align-items-center justify-content-center"
+              style={{ color: 'var(--text)', textDecoration: 'none', transition: 'all 0.2s' }}
+              title="Toggle Theme"
+              type="button"
+            >
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
+
             <span className="fw-semibold text-h d-flex align-items-center gap-1" style={{ color: 'var(--text-h)', fontSize: '15px' }}>
               <span className="opacity-70" style={{ fontSize: '1.2rem' }}>👤</span> {user.fullName}
             </span>

@@ -59,6 +59,11 @@ function ExamTakingView({
     ? Math.round((score / exam.questions.length) * 100)
     : 0;
 
+  // Check if every question in the assessment has been answered
+  const allAnswered = exam.questions.every(
+    (q) => answers[q.id] !== undefined && answers[q.id] !== null && answers[q.id].toString().trim() !== ''
+  );
+
   const today = new Date().toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
@@ -83,7 +88,12 @@ function ExamTakingView({
           </div>
           {!submitted ? (
             <div className="d-flex align-items-center gap-3">
-              <ChatWidget examId={exam.id} />
+              <ChatWidget 
+                examId={exam.id} 
+                currentQuestionIndex={currentQuestionIndex}
+                totalQuestions={exam.questions.length}
+                timeLeft={timeLeft}
+              />
               <div className="text-end">
                 <span className={`fw-bold px-3 py-2 rounded-3 ${timeLeft < 60 ? 'bg-danger text-white' : ''}`} style={{ background: timeLeft < 60 ? '' : 'var(--primary-light)', color: timeLeft < 60 ? '' : 'var(--primary)', fontSize: '18px', transition: 'all 0.3s' }}>
                   ⏱ {formatTime(timeLeft)}
@@ -152,7 +162,7 @@ function ExamTakingView({
                   <button
                     className="btn-primary-custom w-100 fw-bold py-2"
                     onClick={onSubmit}
-                    disabled={loading}
+                    disabled={loading || !allAnswered}
                     style={{ borderRadius: '10px' }}
                   >
                     {loading ? (
