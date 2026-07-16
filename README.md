@@ -4,7 +4,7 @@
 
 **Team:** Anan Safady & Anan Farhat
 **Repository:** https://github.com/fullstackAnans/ExamApp/
-**Deployment:** Runs locally via Docker Compose (see [Running the Application](#running-the-application))
+**Deployment:** [Live Application on Render](https://examapp-frontend-ywhf.onrender.com/) (Also supports running locally via Docker Compose)
 
 ---
 
