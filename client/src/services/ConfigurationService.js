@@ -12,7 +12,7 @@ class ConfigurationService {
       apiDelay: 600,
       maxLogs: 10,
       useServer: true,
-      serverUrl: 'http://localhost:3001'
+      serverUrl: import.meta.env.VITE_API_URL || 'http://localhost:3001'
     };
 
     if (isTestEnv) {
