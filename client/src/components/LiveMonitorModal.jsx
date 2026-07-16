@@ -185,6 +185,7 @@ function LiveMonitorModal({ exam, onClose }) {
                     <div className="d-flex flex-column gap-2">
                       {Object.values(studentProgress).map((student) => {
                         const isOnline = (currentTime - student.lastActive) < 10000; // Active within last 10 seconds
+                        const hasWarnings = student.warnings > 0;
                         
                         return (
                           <div 
@@ -194,12 +195,19 @@ function LiveMonitorModal({ exam, onClose }) {
                               opacity: isOnline ? 1 : 0.65,
                               backgroundColor: 'var(--bg-card)',
                               border: '1px solid var(--border)',
-                              borderLeft: isOnline ? '4px solid #28a745' : '4px solid #6c757d'
+                              borderLeft: hasWarnings
+                                ? '4px solid #dc3545'
+                                : (isOnline ? '4px solid #28a745' : '4px solid #6c757d')
                             }}
                           >
                             <div className="d-flex justify-content-between align-items-center mb-2">
                               <span className="fw-bold text-truncate" style={{ maxWidth: '140px', color: 'var(--text-h)' }}>
                                 {student.studentName}
+                                {hasWarnings && (
+                                  <span className="badge bg-danger text-white ms-2 animate-pulse" style={{ fontSize: '10px', borderRadius: '4px', padding: '3px 6px' }} title={`${student.warnings} tab switch violations detected!`}>
+                                    ⚠️ {student.warnings}
+                                  </span>
+                                )}
                               </span>
                               <span 
                                 className="badge fw-bold" 

@@ -68,7 +68,7 @@ export const useChat = (examId, user) => {
   };
 
   // Method to send student progress
-  const sendProgress = (currentQuestion, totalQuestions, timeLeft) => {
+  const sendProgress = (currentQuestion, totalQuestions, timeLeft, warnings = 0) => {
     if (socketRef.current && isConnected) {
       socketRef.current.emit('student_progress', {
         examId,
@@ -77,7 +77,8 @@ export const useChat = (examId, user) => {
         currentQuestion,
         totalQuestions,
         timeLeft,
-        isOnline: true
+        isOnline: true,
+        warnings
       });
     }
   };

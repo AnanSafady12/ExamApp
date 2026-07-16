@@ -82,7 +82,7 @@ export const initSocket = (httpServer) => {
 
     // Handle student progress updates
     socket.on('student_progress', (data) => {
-      const { examId, studentId, studentName, currentQuestion, totalQuestions, timeLeft, isOnline } = data;
+      const { examId, studentId, studentName, currentQuestion, totalQuestions, timeLeft, isOnline, warnings } = data;
       
       // Forward the progress status update to all teachers connected to the exam's teacher room
       io.to(`exam_${examId}_teachers`).emit('receive_student_progress', {
@@ -92,6 +92,7 @@ export const initSocket = (httpServer) => {
         totalQuestions,
         timeLeft,
         isOnline,
+        warnings,
         timestamp: new Date().toISOString()
       });
     });
