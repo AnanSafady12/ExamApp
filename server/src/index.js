@@ -5,10 +5,14 @@ import userRoutes from './routes/userRoutes.js';
 import examRoutes from './routes/examRoutes.js';
 import scoreRoutes from './routes/scoreRoutes.js';
 import { initSocket } from './services/socketHandler.js';
+import { initializeDatabase } from './db/initDb.js';
 
 const app = express();
 const server = createServer(app);
 const PORT = process.env.PORT || 3001;
+
+// Initialize Database automatically if empty
+await initializeDatabase();
 
 // Initialize WebSockets
 initSocket(server);
