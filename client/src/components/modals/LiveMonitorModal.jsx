@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useChat } from '../hooks/useChat';
-import authService from '../services/AuthService';
+import { useChat } from '../../hooks/useChat';
+import authService from '../../services/AuthService';
 
 function LiveMonitorModal({ exam, onClose }) {
   const currentUser = authService.getCurrentUser();

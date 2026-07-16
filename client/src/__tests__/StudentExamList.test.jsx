@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
-import StudentPortal from '../StudentPortal';
+import StudentPortal from '../pages/StudentPortal';
 import StudentExamList from '../components/StudentExamList';
 import QuestionCard from '../components/QuestionCard';
 import ExamTakingView from '../components/ExamTakingView';

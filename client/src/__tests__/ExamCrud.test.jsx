@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
-import TeacherDashboard from '../TeacherDashboard';
+import TeacherDashboard from '../pages/TeacherDashboard';
 import { getAllExams, createExam, updateExam, deleteExam } from '../api/examService';
 import notificationService from '../services/NotificationService';
 

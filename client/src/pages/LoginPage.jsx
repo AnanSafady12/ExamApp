@@ -109,19 +109,6 @@ function LoginPage({ onLogin }) {
                 Create Account
               </Link>
             </div>
-
-            {/* Helpful section listing default credentials to assist testing */}
-            <div className="mt-4 p-3 rounded-4 border-0" style={{ backgroundColor: 'var(--primary-light)', padding: '16px' }}>
-              <small className="d-block mb-2 fw-bold text-uppercase" style={{ fontSize: '11px', letterSpacing: '0.05em', color: 'var(--primary)' }}>🛠️ Quick Test Accounts</small>
-              <div className="d-flex justify-content-between mb-1" style={{ fontSize: '13px' }}>
-                <span className="text-muted">👨‍🏫 Teacher:</span>
-                <code style={{ color: 'var(--text-h)' }}>teacher1 / pass123</code>
-              </div>
-              <div className="d-flex justify-content-between" style={{ fontSize: '13px' }}>
-                <span className="text-muted">🎓 Student:</span>
-                <code style={{ color: 'var(--text-h)' }}>student1 / pass123</code>
-              </div>
-            </div>
           </div>
         </div>
       </div>

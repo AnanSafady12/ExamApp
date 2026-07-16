@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { getAllExams, getScoresByExam, createExam, updateExam, deleteExam, publishResults } from './api/examService';
-import ExamList from './components/ExamList';
-import ScoreTable from './components/ScoreTable';
-import ExamForm from './components/ExamForm';
-import DeleteExamModal from './components/DeleteExamModal';
-import LiveMonitorModal from './components/LiveMonitorModal';
-import notificationService from './services/NotificationService';
-import loggerService from './services/LoggerService';
-import { useTeacherNotifications } from './hooks/useTeacherNotifications';
+import { getAllExams, getScoresByExam, createExam, updateExam, deleteExam, publishResults } from '../api/examService';
+import ExamList from '../components/ExamList';
+import ScoreTable from '../components/ScoreTable';
+import ExamForm from '../components/ExamForm';
+import DeleteExamModal from '../components/modals/DeleteExamModal';
+import LiveMonitorModal from '../components/modals/LiveMonitorModal';
+import notificationService from '../services/NotificationService';
+import loggerService from '../services/LoggerService';
+import { useTeacherNotifications } from '../hooks/useTeacherNotifications';
 
 // Renders the workspace for teachers to manage exams and view scores
 function TeacherDashboard() {

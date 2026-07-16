@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { getAllExams, getExamById, saveScore, getStudentSubmissions } from './api/examService';
-import StudentExamList from './components/StudentExamList';
-import ExamTakingView from './components/ExamTakingView';
-import notificationService from './services/NotificationService';
-import loggerService from './services/LoggerService';
-import authService from './services/AuthService';
+import { getAllExams, getExamById, saveScore, getStudentSubmissions } from '../api/examService';
+import StudentExamList from '../components/StudentExamList';
+import ExamTakingView from '../components/ExamTakingView';
+import notificationService from '../services/NotificationService';
+import loggerService from '../services/LoggerService';
+import authService from '../services/AuthService';
 
 // Utility function to shuffle an array (Fisher-Yates algorithm)
 const shuffleArray = (array) => {
