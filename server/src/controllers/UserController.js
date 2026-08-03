@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import UserService from '../services/UserService.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_jwt_key_123';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 class UserController {
   async register(req, res) {
